@@ -20,18 +20,22 @@ router.get('/analysis', protect, async (req, res) => {
     // Calculate overall wellbeing score (0-100)
     // Only consider mood and activities, with equal weight
     let moodScore = 0;
+    let hasValidMood = false;
     if (progress.moodData.data.length > 0) {
       // Filter out zero values (uninitialized mood entries)
       const validMoodData = progress.moodData.data.filter((value: number) => value > 0);
       if (validMoodData.length > 0) {
+        hasValidMood = true;
         const avgMood = validMoodData.reduce((a: number, b: number) => a + b, 0) / validMoodData.length;
         moodScore = (avgMood / 5) * 50; // Convert 0-5 scale to 0-50 points
       }
     }
     
     // Calculate activity score based on completed activities
-    const activityScore = progress.activitiesCompleted > 0 ? Math.min((progress.activitiesCompleted / 5) * 50, 50) : 0;
-    const overallScore = Math.round(moodScore + activityScore);
+    const hasValidActivity = progress.activitiesCompleted > 0;
+    const activityScore = hasValidActivity ? Math.min((progress.activitiesCompleted / 5) * 50, 50) : 0;
+    // If no valid mood and no valid activity, score is 0
+    const overallScore = hasValidMood || hasValidActivity ? Math.round(moodScore + activityScore) : 0;
 
     // Generate insights based on user data
     const insights = [];

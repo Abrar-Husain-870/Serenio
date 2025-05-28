@@ -46,7 +46,8 @@ const MoodTracker: React.FC = () => {
       dispatch(addMoodStart());
       const response = await axiosInstance.post('/mood', { 
         mood, 
-        note, 
+        note,
+        notes: note,
         date: new Date().toISOString() 
       });
       
@@ -211,7 +212,12 @@ const MoodTracker: React.FC = () => {
                       </button>
                     </div>
                   </div>
-                  {entry.note && <p className="text-gray-600 dark:text-gray-400">{entry.note}</p>}
+                  {/* Show the note beneath the mood */}
+                  {entry.note ? (
+                    <div className="text-gray-700 dark:text-gray-300 text-sm mt-1 whitespace-pre-line">
+                      {entry.note}
+                    </div>
+                  ) : null}
                 </div>
               );
             })}
