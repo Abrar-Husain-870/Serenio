@@ -28,7 +28,11 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
 
   // Check if token exists in Authorization header
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
+    try {
+      token = req.headers.authorization.split(' ')[1].trim();
+    } catch (error) {
+      return res.status(401).json({ success: false, error: 'Invalid token format' });
+    }
   }
   // Check if token exists in cookies
   else if (req.cookies && req.cookies.auth_token) {

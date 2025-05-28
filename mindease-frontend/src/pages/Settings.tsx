@@ -15,7 +15,6 @@ const Settings = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Simulate loading user settings
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
@@ -24,34 +23,19 @@ const Settings = () => {
 
   const handleToggle = (setting: keyof typeof settings) => {
     if (setting === 'darkMode') {
-      // Toggle dark mode class on html element
       document.documentElement.classList.toggle('dark');
-      
-      // Update state
       const newDarkMode = document.documentElement.classList.contains('dark');
-      setSettings(prev => ({
-        ...prev,
-        darkMode: newDarkMode
-      }));
-      
-      // Save user preference
+      setSettings(prev => ({ ...prev, darkMode: newDarkMode }));
       localStorage.setItem('darkMode', String(newDarkMode));
-      
       toast.success(`Dark mode ${newDarkMode ? 'enabled' : 'disabled'}!`);
     } else {
-      setSettings((prev) => ({
-        ...prev,
-        [setting]: !prev[setting],
-      }));
+      setSettings((prev) => ({ ...prev, [setting]: !prev[setting] }));
       toast.success('Settings updated!');
     }
   };
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSettings((prev) => ({
-      ...prev,
-      reminderTime: e.target.value,
-    }));
+    setSettings((prev) => ({ ...prev, reminderTime: e.target.value }));
     toast.success('Reminder time updated!');
   };
 

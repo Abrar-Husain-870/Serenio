@@ -6,27 +6,9 @@ import {
   generateMentalHealthAssessment
 } from '../utils/huggingfaceService';
 import { processChatbotQueryWithRAG } from '../rag/chatbot';
+import { protect } from '../middleware/auth';
 
 const router = express.Router();
-
-// Middleware to check if user is authenticated
-const isAuthenticated = (req: any, res: any, next: any) => {
-  // Check if authorization header exists
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-  
-  // Extract the token
-  const token = authHeader.split(' ')[1];
-  if (!token) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
-  
-  // In a real app, verify the token here
-  // For demo purposes, we'll just check if it exists
-  next();
-};
 
 // Get a positive quote
 router.get('/quotes/positive', async (req, res) => {
@@ -47,7 +29,7 @@ router.get('/quotes/positive', async (req, res) => {
 });
 
 // Generate AI review of mental health
-router.post('/review/generate', isAuthenticated, async (req, res) => {
+router.post('/review/generate', protect, async (req, res) => {
   try {
     const userData = req.body;
     const review = await generateMentalHealthReview(userData);
@@ -59,16 +41,22 @@ router.post('/review/generate', isAuthenticated, async (req, res) => {
 });
 
 // Process chatbot query
-router.post('/chatbot/query', async (req, res) => {
+router.post('/chatbot/query', protect, async (req, res) => {
   try {
     const { query } = req.body;
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+    
     if (!query) {
       return res.status(400).json({ error: 'Query is required' });
     }
     
     // Try RAG-enhanced chatbot first
     try {
-      const response = await processChatbotQueryWithRAG(query);
+      const response = await processChatbotQueryWithRAG(query, userId);
       return res.json(response);
     } catch (ragError) {
       console.error('RAG chatbot error, falling back to basic chatbot:', ragError);
@@ -83,7 +71,7 @@ router.post('/chatbot/query', async (req, res) => {
 });
 
 // Generate mental health assessment
-router.post('/assessment/generate', isAuthenticated, async (req, res) => {
+router.post('/assessment/generate', protect, async (req, res) => {
   try {
     const { answers } = req.body;
     if (!answers || typeof answers !== 'object') {
@@ -99,7 +87,7 @@ router.post('/assessment/generate', isAuthenticated, async (req, res) => {
 });
 
 // Get user's mental health history
-router.get('/assessment/history', isAuthenticated, (req, res) => {
+router.get('/assessment/history', protect, (req, res) => {
   // In a real app, fetch from database
   // For demo, return mock data
   res.json({

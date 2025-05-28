@@ -1,10 +1,9 @@
-import { createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface User {
   id: string;
-  email: string;
   name: string;
+  email: string;
 }
 
 interface AuthState {
@@ -17,10 +16,10 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  token: null,
+  token: localStorage.getItem('token'),
   loading: false,
   error: null,
-  isAuthenticated: false
+  isAuthenticated: !!localStorage.getItem('token')
 };
 
 const authSlice = createSlice({
@@ -37,6 +36,9 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.error = null;
       state.isAuthenticated = true;
+      if (action.payload.token !== 'cookie') {
+        localStorage.setItem('token', action.payload.token);
+      }
     },
     loginFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
@@ -50,6 +52,7 @@ const authSlice = createSlice({
       state.token = null;
       state.error = null;
       state.isAuthenticated = false;
+      localStorage.removeItem('token');
     },
     updateUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;

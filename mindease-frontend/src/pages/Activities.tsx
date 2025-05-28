@@ -187,6 +187,14 @@ const Activities: React.FC = () => {
       
       if (response.status === 200) {
         dispatch(deleteActivity(id));
+        
+        // Update progress on the backend
+        try {
+          await axiosInstance.post('/progress/update', { activityCompleted: false });
+        } catch (error) {
+          console.error('Error updating progress:', error);
+        }
+        
         toast.success('Activity deleted successfully!');
       }
     } catch (error: any) {

@@ -27,32 +27,21 @@ const Navbar: React.FC = () => {
           </Link>
         </div>
         {/* Right: Account Name and Logout */}
-        <div className="flex items-center ml-auto">
-          {isAuthenticated && user && (
-            <span className="mr-4 text-gray-200 font-medium whitespace-nowrap">{user.name || user.email}</span>
-          )}
-          {isAuthenticated ? (
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700"
-            >
-              Logout
-            </button>
-          ) : (
-            <div className="flex space-x-4">
-              <Link
-                to="/login"
-                className="px-4 py-2 text-sm text-gray-200 hover:text-white"
+        <div className="flex items-center gap-3 pr-4">
+          {isAuthenticated && (
+            <>
+              {/* Initials beside account name */}
+              <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center border-2 border-primary-200">
+                <span className="text-primary-600 font-bold text-lg">{user?.name?.charAt(0) || 'A'}</span>
+              </div>
+              <span className="text-white font-semibold">{user?.name || 'Account'}</span>
+              <button
+                onClick={handleLogout}
+                className="ml-2 px-3 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition-colors"
               >
-                Login
-              </Link>
-              <Link
-                to="/signup"
-                className="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700"
-              >
-                Sign Up
-              </Link>
-            </div>
+                Logout
+              </button>
+            </>
           )}
         </div>
       </div>

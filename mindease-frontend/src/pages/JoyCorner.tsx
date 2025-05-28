@@ -6,7 +6,7 @@ import MemoryGame from '../components/joy/MemoryGame';
 import WordJumble from '../components/joy/WordJumble';
 import DrawingCanvas from '../components/joy/DrawingCanvas';
 import UpliftingContentComponent from '../components/joy/UpliftingContent';
-import axios from 'axios';
+import axiosInstance from '../utils/api';
 import { toast } from 'react-toastify';
 
 // Emoji celebration component
@@ -198,15 +198,30 @@ const DailyChallenges = () => {
   const [showCelebration, setShowCelebration] = useState(false);
   const { token } = useAppSelector((state) => state.auth);
 
+  // Check if today's challenge is completed
+  useEffect(() => {
+    const checkChallengeStatus = async () => {
+      try {
+        const response = await axiosInstance.get('/progress');
+        const today = new Date().toISOString().split('T')[0];
+        const completedChallenges = response.data.completedChallenges || [];
+        setIsCompleted(completedChallenges.includes(today));
+      } catch (error) {
+        console.error('Error checking challenge status:', error);
+      }
+    };
+
+    if (token) {
+      checkChallengeStatus();
+    }
+  }, [token]);
+
   const handleComplete = async () => {
     try {
       setIsCompleted(true);
-      await axios.post('/api/progress/update', {
-        activityCompleted: true
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      await axiosInstance.post('/progress/update', {
+        activityCompleted: true,
+        challengeCompleted: true
       });
 
       toast.success('Challenge completed!', {

@@ -21,28 +21,40 @@ const Chatbot: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chatbot/query', {
+      // Get token from Redux state
+      if (!token) {
+        throw new Error('Please log in to use the chatbot');
+      }
+
+      const response = await fetch('http://localhost:3001/api/chatbot/query', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': token === 'cookie' ? '' : `Bearer ${token}`
         },
+        credentials: 'include',
         body: JSON.stringify({ query: message })
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'I had trouble processing your request');
+      }
+
       const data = await response.json();
-      
-      // Add bot response to chat
       setChatHistory(prev => [...prev, { text: data.response, isUser: false }]);
     } catch (error) {
       console.error('Error sending message:', error);
-      setChatHistory(prev => [...prev, { text: 'Sorry, I encountered an error. Please try again.', isUser: false }]);
+      setChatHistory(prev => [...prev, { 
+        text: error instanceof Error ? error.message : 'I apologize, but I encountered an issue. Please try again.', 
+        isUser: false 
+      }]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!isAuthenticated || !token) return null;
+  if (!isAuthenticated) return null;
 
   return (
     <div className="fixed bottom-4 right-4 z-50">

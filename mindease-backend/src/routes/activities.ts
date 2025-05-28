@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { protect } from '../middleware/auth';
+import { userProgress } from './moods';
 
 const router = express.Router();
 
@@ -114,6 +115,19 @@ router.delete('/:id', protect, async (req, res) => {
     }
 
     activities.splice(activityIndex, 1);
+    
+    // Update progress data after deletion
+    if (userProgress[userId]) {
+      userProgress[userId].activitiesCompleted = Math.max(0, userProgress[userId].activitiesCompleted - 1);
+      
+      // Update today's activity count in the chart data
+      const today = new Date().getDay();
+      const dayIndex = today === 0 ? 6 : today - 1;
+      if (userProgress[userId].activityData.data[dayIndex] > 0) {
+        userProgress[userId].activityData.data[dayIndex] -= 1;
+      }
+    }
+    
     res.json({ success: true, message: 'Activity deleted' });
   } catch (error) {
     console.error('Error deleting activity:', error);

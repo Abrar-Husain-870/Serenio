@@ -4,6 +4,9 @@ import { userProgress } from './moods';
 
 const router = express.Router();
 
+// Store completed challenges
+const completedChallenges: Record<string, Set<string>> = {};
+
 // Get user progress data
 router.get('/', protect, async (req, res) => {
   try {
@@ -26,8 +29,22 @@ router.get('/', protect, async (req, res) => {
         achievements: []
       };
     }
+
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split('T')[0];
     
-    res.json(userProgress[userId]);
+    // Initialize completed challenges for user if not exists
+    if (!completedChallenges[userId]) {
+      completedChallenges[userId] = new Set();
+    }
+    
+    // Add completed challenges to the response
+    const response = {
+      ...userProgress[userId],
+      completedChallenges: Array.from(completedChallenges[userId])
+    };
+    
+    res.json(response);
   } catch (error) {
     console.error('Error fetching progress:', error);
     res.status(500).json({ success: false, error: 'Server error' });
@@ -38,7 +55,7 @@ router.get('/', protect, async (req, res) => {
 router.post('/update', protect, async (req, res) => {
   try {
     const userId = (req as any).user.id;
-    const { activityCompleted } = req.body;
+    const { activityCompleted, challengeCompleted } = req.body;
     
     // Initialize progress data if it doesn't exist for this user
     if (!userProgress[userId]) {
@@ -57,9 +74,14 @@ router.post('/update', protect, async (req, res) => {
         achievements: []
       };
     }
+
+    // Initialize completed challenges for user if not exists
+    if (!completedChallenges[userId]) {
+      completedChallenges[userId] = new Set();
+    }
     
     // Update activities completed count
-    if (activityCompleted) {
+    if (activityCompleted === true) {
       userProgress[userId].activitiesCompleted += 1;
       
       // Update today's activity count in the chart data
@@ -88,12 +110,25 @@ router.post('/update', protect, async (req, res) => {
           description: 'Completed 25 wellness activities'
         });
       }
+    } else if (activityCompleted === false) {
+      // Reset activities completed count and activity data when an activity is deleted
+      userProgress[userId].activitiesCompleted = 0;
+      userProgress[userId].activityData.data = [0, 0, 0, 0, 0, 0, 0];
+    }
+
+    // Handle challenge completion
+    if (challengeCompleted) {
+      const today = new Date().toISOString().split('T')[0];
+      completedChallenges[userId].add(today);
     }
     
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Progress updated successfully',
-      data: userProgress[userId]
+      data: {
+        ...userProgress[userId],
+        completedChallenges: Array.from(completedChallenges[userId])
+      }
     });
   } catch (error) {
     console.error('Error updating progress:', error);
