@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FiBell, FiLock, FiUser, FiMoon, FiSun } from 'react-icons/fi';
 import { toast } from 'react-toastify';
-import { mockApi } from '../utils/mockApi';
 import { useAppSelector } from '../store/hooks';
 
 const Settings = () => {

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FiEdit3, FiTrash2, FiDownload, FiCheck } from 'react-icons/fi';
+import { FiTrash2, FiDownload, FiCheck } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
 interface Point {

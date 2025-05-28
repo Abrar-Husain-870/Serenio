@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FiChevronRight, FiRotateCw, FiHelpCircle, FiAward } from 'react-icons/fi';
+import { FiChevronRight, FiRotateCw, FiHelpCircle } from 'react-icons/fi';
 import { toast } from 'react-toastify';
+import '@types/node';
 
 // Positive word list for the game
 const wordList = [
