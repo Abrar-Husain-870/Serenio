@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiSmile, FiAward, FiRotateCw } from 'react-icons/fi';
 import { toast } from 'react-toastify';
-import '@types/node';
 
 interface Card {
   id: number;

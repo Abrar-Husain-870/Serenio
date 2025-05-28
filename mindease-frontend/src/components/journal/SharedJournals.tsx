@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
-import { Card, CardContent, Typography, Box, Avatar, Chip, Grid } from '@mui/material';
+import { Card, CardContent, Typography, Box, Avatar, Chip } from '@mui/material';
+import Grid from '@mui/material/GridLegacy';
 import { useSelector } from 'react-redux';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
@@ -124,8 +125,8 @@ const SharedJournals: React.FC = () => {
                     fontWeight: 500,
                     fontSize: '1rem',
                     borderRadius: '0.75rem',
-                    px: 1.5,
-                    py: 0.5,
+                    paddingX: 1.5,
+                    paddingY: 0.5,
                   }}
                 />
               </CardContent>

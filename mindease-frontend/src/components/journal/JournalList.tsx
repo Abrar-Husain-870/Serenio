@@ -2,15 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { 
-  Card, 
-  CardContent, 
-  Typography, 
   Box, 
   IconButton,
-  Grid,
-  Chip
+  Typography
 } from '@mui/material';
-import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 import { JournalEntry } from '../../store/slices/journalSlice';
 
