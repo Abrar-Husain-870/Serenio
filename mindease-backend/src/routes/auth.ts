@@ -112,7 +112,7 @@ router.get('/google/callback',
   (req, res, next) => {
     console.log('Received Google OAuth callback');
     passport.authenticate('google', { 
-      failureRedirect: 'https://mind-ease-mwpuoe148-munaafns-projects.vercel.app/login?error=authentication_failed',
+      failureRedirect: 'https://mind-ease-olive.vercel.app/login?error=authentication_failed',
       session: true // Enable session
     })(req, res, next);
   },
@@ -123,7 +123,7 @@ router.get('/google/callback',
       
       if (!user || !user.id) {
         console.error('Failed to get user ID from user object:', user);
-        return res.redirect('https://mind-ease-mwpuoe148-munaafns-projects.vercel.app/login?error=authentication_failed');
+        return res.redirect('https://mind-ease-olive.vercel.app/login?error=authentication_failed');
       }
       
       console.log('Generating JWT token for user:', user.id);
@@ -144,10 +144,10 @@ router.get('/google/callback',
       
       console.log('Redirecting to OAuth success page');
       // Redirect to OAuth success page instead of directly to dashboard
-      res.redirect('https://mind-ease-mwpuoe148-munaafns-projects.vercel.app/oauth-success');
+      res.redirect('https://mind-ease-olive.vercel.app/oauth-success');
     } catch (error) {
       console.error('Error in Google callback:', error);
-      res.redirect('https://mind-ease-mwpuoe148-munaafns-projects.vercel.app/login?error=server_error');
+      res.redirect('https://mind-ease-olive.vercel.app/login?error=server_error');
     }
   }
 );
