@@ -104,7 +104,7 @@ const Activities: React.FC = () => {
         activity.title.toLowerCase() === title.toLowerCase() && 
         activity.description.toLowerCase() === description.toLowerCase() &&
         activity.type === type &&
-        activity.duration === durationNum
+        Number(activity.duration) === durationNum
     );
 
     if (isDuplicate) {

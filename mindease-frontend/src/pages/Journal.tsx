@@ -3,7 +3,6 @@ import { Container, Typography, Box, Tabs, Tab } from '@mui/material';
 import JournalEntry from '../components/journal/JournalEntry';
 import JournalList from '../components/journal/JournalList';
 import SharedJournals from '../components/journal/SharedJournals';
-import { useAppSelector } from '../store/hooks';
 
 const Journal: React.FC = () => {
   const [tabValue, setTabValue] = React.useState(0);
