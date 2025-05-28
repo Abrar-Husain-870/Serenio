@@ -42,7 +42,7 @@ const WordJumble: React.FC = () => {
   const [showHint, setShowHint] = useState(false);
   const [score, setScore] = useState(0);
   const [timer, setTimer] = useState(0);
-  const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
+  const [timerInterval, setTimerInterval] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [attemptsLeft, setAttemptsLeft] = useState(3);
 

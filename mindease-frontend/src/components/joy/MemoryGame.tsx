@@ -20,7 +20,7 @@ const MemoryGame: React.FC = () => {
   const [gameStarted, setGameStarted] = useState<boolean>(false);
   const [gameCompleted, setGameCompleted] = useState<boolean>(false);
   const [timer, setTimer] = useState<number>(0);
-  const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
+  const [timerInterval, setTimerInterval] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   // Initialize the game with shuffled cards
   const initializeGame = () => {
