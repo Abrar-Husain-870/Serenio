@@ -4,10 +4,13 @@
   "description": "Backend for MindEase mental wellness app",
   "main": "dist/server.js",
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "node ./dist/server.js",
     "dev": "ts-node-dev src/server.ts",
-    "build": "tsc",
-    "init-rag": "ts-node src/rag/init.ts"
+    "build": "cd mindease-backend && tsc",
+    "init-rag": "ts-node src/rag/init.ts",
+    "postinstall": "cd mindease-backend && npm run build",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean"
   },
   "keywords": [],
   "author": "",
