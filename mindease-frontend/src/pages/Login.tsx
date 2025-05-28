@@ -22,7 +22,7 @@ const Login: React.FC = () => {
     dispatch(loginStart());
     
     try {
-      const { data } = await axiosInstance.post('/auth/login', {
+      const { data } = await axiosInstance.post('/api/auth/login', {
         email,
         password
       });

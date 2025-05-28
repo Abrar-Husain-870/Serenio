@@ -14,7 +14,7 @@ const OAuthSuccess: React.FC = () => {
       try {
         console.log('OAuthSuccess: Fetching user data...');
         // Get user data from the verify-token endpoint
-        const response = await axiosInstance.get('/auth/verify-token');
+        const response = await axiosInstance.get('/api/auth/verify-token');
         console.log('OAuthSuccess: Received response:', response.data);
 
         if (!response.data) {
