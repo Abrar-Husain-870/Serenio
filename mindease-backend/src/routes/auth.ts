@@ -3,18 +3,9 @@ import passport from 'passport';
 import jwt from 'jsonwebtoken';
 import { protect } from '../middleware/auth';
 import { User } from '../models/User';
+import bcrypt from 'bcryptjs';
 
 const router = express.Router();
-
-// Mock users data store (replace with database in production)
-const users = [
-  {
-    id: '1',
-    name: 'Test User',
-    email: 'test@example.com',
-    password: 'password' // Store plaintext passwords for simplicity in this demo
-  }
-];
 
 // Register a new user
 router.post('/register', async (req, res) => {
@@ -26,34 +17,31 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Please provide all required fields' });
     }
     
-    // Check if user exists
-    const userExists = users.find(user => user.email === email);
-    if (userExists) {
+    // Check if user exists in MongoDB
+    let existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(400).json({ error: 'User already exists' });
     }
     
-    // Create new user (using plaintext password for demo)
-    const newUserId = (users.length + 1).toString();
-    const newUser = {
-      id: newUserId,
+    // Create new user in MongoDB
+    const user = new User({
       name,
       email,
-      password // Store plaintext for demo purposes
-    };
+      password
+    });
     
-    users.push(newUser);
-    console.log('New user registered:', { ...newUser, password: '[HIDDEN]' });
+    await user.save();
     
     // Generate JWT token
     const token = jwt.sign(
-      { userId: newUserId },
+      { userId: user._id },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '30d' }
     );
     
     // Return user data without password and token
     res.status(201).json({
-      user: { id: newUser.id, name: newUser.name, email: newUser.email },
+      user: { id: user._id, name: user.name, email: user.email },
       token
     });
   } catch (error) {
@@ -69,38 +57,39 @@ router.post('/login', async (req, res) => {
     
     // Validate input
     if (!email || !password) {
-      return res.status(400).json({ success: false, error: 'Please provide email and password' });
+      return res.status(400).json({ error: 'Please provide email and password' });
     }
     
     console.log(`Login attempt: ${email}`);
     
-    // Check if user exists
-    const user = users.find(user => user.email === email);
+    // Find user in MongoDB
+    const user = await User.findOne({ email });
     if (!user) {
-      console.log(`User not found: ${email}`);
-      return res.status(401).json({ success: false, error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
     
-    // For demo purposes, directly compare passwords 
-    const isMatch = user.password === password;
-    
+    // Compare password using bcrypt
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      console.log(`Password mismatch for user: ${email}`);
-      return res.status(401).json({ success: false, error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
     
     console.log(`Successful login: ${email}`);
     
     // Generate token
     const token = jwt.sign(
-      { userId: user.id },
+      { userId: user._id },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '30d' }
     );
     
     // Return user and token
     res.json({
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { 
+        id: user._id,
+        name: user.name, 
+        email: user.email 
+      },
       token
     });
   } catch (error) {
@@ -110,70 +99,71 @@ router.post('/login', async (req, res) => {
 });
 
 // Google OAuth
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', (req, res, next) => {
+  console.log('Initiating Google OAuth login');
+  passport.authenticate('google', { 
+    scope: ['profile', 'email'],
+    prompt: 'select_account'
+  })(req, res, next);
+});
 
 // Google OAuth callback
-router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/login', session: false }), (req, res) => {
-  // Issue JWT and redirect to frontend with token
-  const user = req.user as any;
-  const userId = user._id ? user._id : user.id;
-  
-  if (!userId) {
-    console.error('Failed to get user ID from user object:', user);
-    return res.redirect('http://localhost:3000/login?error=authentication_failed');
+router.get('/google/callback', 
+  (req, res, next) => {
+    console.log('Received Google OAuth callback');
+    passport.authenticate('google', { 
+      failureRedirect: 'http://localhost:3000/login?error=authentication_failed',
+      session: true // Enable session
+    })(req, res, next);
+  },
+  async (req, res) => {
+    try {
+      console.log('Processing Google OAuth callback');
+      const user = req.user as any;
+      
+      if (!user || !user.id) {
+        console.error('Failed to get user ID from user object:', user);
+        return res.redirect('http://localhost:3000/login?error=authentication_failed');
+      }
+      
+      console.log('Generating JWT token for user:', user.id);
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: user.id },
+        process.env.JWT_SECRET || 'your-secret-key',
+        { expiresIn: '30d' }
+      );
+      
+      // Set the token in a secure HTTP-only cookie
+      res.cookie('auth_token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      });
+      
+      console.log('Redirecting to OAuth success page');
+      // Redirect to OAuth success page instead of directly to dashboard
+      res.redirect('http://localhost:3000/oauth-success');
+    } catch (error) {
+      console.error('Error in Google callback:', error);
+      res.redirect('http://localhost:3000/login?error=server_error');
+    }
   }
-  
-  const token = jwt.sign(
-    { userId },
-    process.env.JWT_SECRET || 'your-secret-key',
-    { expiresIn: '30d' }
-  );
-  
-  // Redirect to frontend with token
-  res.redirect(`http://localhost:3000/oauth-success?token=${token}`);
-});
+);
 
 // Get current user from token
 router.get('/me', protect, async (req, res) => {
   try {
-    // First, check if user exists in mock users
-    let user = users.find(user => user.id === req.user?.id);
+    const user = await User.findById(req.user?.id);
     
     if (!user) {
-      // If not found in mock users, this might be a Google user
-      // Look up the mongoose User model
-      try {
-        const mongoUser = await User.findById(req.user?._id || req.user?.id);
-        if (mongoUser) {
-          // Return mongoose user data
-          return res.json({
-            id: mongoUser._id.toString(),
-            name: mongoUser.name,
-            email: mongoUser.email,
-            googleId: mongoUser.googleId
-          });
-        }
-      } catch (err) {
-        console.error('Error looking up MongoDB user:', err);
-      }
-      
-      // If we get here, the user doesn't exist in either system
-      // For testing purposes, let's create a mock user based on req.user id
-      if (req.user) {
-        console.log('Creating mock user for OAuth user:', req.user);
-        return res.json({
-          id: req.user.id || req.user._id,
-          name: req.user.name || "Google User",
-          email: req.user.email || "google.user@example.com"
-        });
-      }
-      
       return res.status(404).json({ error: 'User not found' });
     }
     
-    // Return user data without password (match frontend expected format)
+    // Return user data without password
     res.json({
-      id: user.id,
+      id: user._id,
       name: user.name,
       email: user.email
     });
@@ -183,9 +173,23 @@ router.get('/me', protect, async (req, res) => {
   }
 });
 
-// Test authentication route
-router.get('/test-auth', protect, (req, res) => {
-  res.json({ message: 'Authentication successful', userId: req.user?.id });
+// Verify token endpoint
+router.get('/verify-token', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user?.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json({
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email
+    });
+  } catch (error) {
+    console.error('Error verifying token:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 export default router; 

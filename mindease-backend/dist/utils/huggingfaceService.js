@@ -89,8 +89,8 @@ async function generateMentalHealthReview(userData) {
             // Extract recommendations by looking for numbered or bullet points
             recommendations = parts[1]
                 .split(/\d+\.|•|-/)
-                .filter(item => item.trim().length > 0)
-                .map(item => item.trim());
+                .filter((item) => item.trim().length > 0)
+                .map((item) => item.trim());
         }
         if (recommendations.length === 0) {
             recommendations = [

@@ -1,10 +1,60 @@
+import axios from 'axios';
+
 // API Configuration
-export const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = 'http://localhost:3001/api';
+
+// Create axios instance with default config
+const axiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true, // This is important for sending cookies
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add request interceptor for logging and adding auth token
+axiosInstance.interceptors.request.use(
+  (config) => {
+    // Get token from localStorage
+    const token = localStorage.getItem('token');
+    
+    // Add token to headers if it exists
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    console.log('API Request:', config.method?.toUpperCase(), config.url);
+    return config;
+  },
+  (error) => {
+    console.error('API Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor to handle errors
+axiosInstance.interceptors.response.use(
+  (response) => {
+    console.log('API Response:', response.status, response.config.url);
+    return response;
+  },
+  (error) => {
+    console.error('API Response Error:', error.response?.status, error.config?.url);
+    if (error.response?.status === 401) {
+      // Clear token and redirect to login
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default axiosInstance;
+export { API_BASE_URL };
 
 // Helper function for making API requests with authentication
 export const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
   const token = localStorage.getItem('token');
-  const isGoogleLogin = localStorage.getItem('isGoogleLogin') === 'true';
   
   const headers = {
     'Content-Type': 'application/json',
@@ -12,19 +62,20 @@ export const fetchWithAuth = async (endpoint: string, options: RequestInit = {})
     ...(options.headers || {})
   };
   
-  console.log(`Making ${options.method || 'GET'} request to ${API_BASE_URL}${endpoint}`);
-  console.log('Headers:', headers);
-  console.log('Auth state:', { token: !!token, isGoogleLogin });
-  
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers
-  });
-  
-  if (!response.ok) {
-    console.error(`API request failed: ${response.status} ${response.statusText}`);
-    console.error(`Endpoint: ${API_BASE_URL}${endpoint}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'API request failed');
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('API request failed:', error);
+    throw error;
   }
-  
-  return response;
 }; 

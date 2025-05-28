@@ -5,6 +5,7 @@ import {
   processChatbotQuery,
   generateMentalHealthAssessment
 } from '../utils/huggingfaceService';
+import { processChatbotQueryWithRAG } from '../rag/chatbot';
 
 const router = express.Router();
 
@@ -65,8 +66,16 @@ router.post('/chatbot/query', async (req, res) => {
       return res.status(400).json({ error: 'Query is required' });
     }
     
-    const response = await processChatbotQuery(query);
-    res.json(response);
+    // Try RAG-enhanced chatbot first
+    try {
+      const response = await processChatbotQueryWithRAG(query);
+      return res.json(response);
+    } catch (ragError) {
+      console.error('RAG chatbot error, falling back to basic chatbot:', ragError);
+      // Fallback to basic chatbot if RAG fails
+      const response = await processChatbotQuery(query);
+      return res.json(response);
+    }
   } catch (error) {
     console.error('Error processing chatbot query:', error);
     res.status(500).json({ error: 'Failed to process query' });

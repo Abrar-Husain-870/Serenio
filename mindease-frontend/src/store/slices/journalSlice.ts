@@ -6,6 +6,7 @@ export interface JournalEntry {
   date: string;
   content: string;
   sentiment: 'positive' | 'neutral' | 'negative';
+  mood?: string;
 }
 
 interface JournalState {

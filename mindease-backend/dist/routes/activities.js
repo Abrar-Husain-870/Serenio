@@ -82,4 +82,25 @@ const toggleActivity = async (req, res) => {
 // Support both methods
 router.patch('/:id/toggle', auth_1.protect, toggleActivity);
 router.put('/:id/toggle', auth_1.protect, toggleActivity);
+// Delete an activity
+router.delete('/:id', auth_1.protect, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const activityId = parseInt(req.params.id);
+        console.log('All activities at delete time:', activities);
+        if (isNaN(activityId)) {
+            return res.status(400).json({ success: false, error: 'Invalid activity ID' });
+        }
+        const activityIndex = activities.findIndex(a => (a.id === activityId || a.id === req.params.id) && a.userId === userId);
+        if (activityIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Activity not found' });
+        }
+        activities.splice(activityIndex, 1);
+        res.json({ success: true, message: 'Activity deleted' });
+    }
+    catch (error) {
+        console.error('Error deleting activity:', error);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
 exports.default = router;

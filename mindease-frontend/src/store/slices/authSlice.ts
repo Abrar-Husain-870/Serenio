@@ -12,13 +12,15 @@ interface AuthState {
   token: string | null;
   loading: boolean;
   error: string | null;
+  isAuthenticated: boolean;
 }
 
 const initialState: AuthState = {
   user: null,
-  token: localStorage.getItem('token'),
+  token: null,
   loading: false,
   error: null,
+  isAuthenticated: false
 };
 
 const authSlice = createSlice({
@@ -33,17 +35,21 @@ const authSlice = createSlice({
       state.loading = false;
       state.user = action.payload.user;
       state.token = action.payload.token;
-      localStorage.setItem('token', action.payload.token);
+      state.error = null;
+      state.isAuthenticated = true;
     },
     loginFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
+      state.user = null;
+      state.token = null;
+      state.isAuthenticated = false;
     },
     logout: (state) => {
       state.user = null;
       state.token = null;
-      localStorage.removeItem('token');
-      localStorage.removeItem('isGoogleLogin');
+      state.error = null;
+      state.isAuthenticated = false;
     },
     updateUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;

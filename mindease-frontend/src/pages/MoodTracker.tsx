@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { addMoodStart, addMoodSuccess, setMoods } from '../store/slices/moodSlice';
-import { FiSmile, FiMeh, FiFrown } from 'react-icons/fi';
+import { addMoodStart, addMoodSuccess, setMoods, deleteMood, addMoodFailure } from '../store/slices/moodSlice';
+import { FiSmile, FiMeh, FiFrown, FiTrash2, FiClock } from 'react-icons/fi';
 import { toast } from 'react-toastify';
-import { fetchWithAuth } from '../utils/api';
+import axiosInstance from '../utils/api';
 
 const MoodTracker: React.FC = () => {
   const [mood, setMood] = useState<'happy' | 'neutral' | 'sad'>('neutral');
   const [note, setNote] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const dispatch = useAppDispatch();
   const { entries, loading } = useAppSelector((state) => state.mood);
   const { token } = useAppSelector((state) => state.auth);
@@ -15,21 +16,22 @@ const MoodTracker: React.FC = () => {
   useEffect(() => {
     const fetchMoods = async () => {
       try {
-        const response = await fetchWithAuth('/moods');
-        
-        if (response.ok) {
-          const data = await response.json();
-          dispatch(setMoods(data));
+        const response = await axiosInstance.get('/mood');
+        if (Array.isArray(response.data)) {
+          dispatch(setMoods(response.data));
         } else {
           throw new Error('Failed to fetch moods');
         }
       } catch (error) {
         console.error('Error fetching moods:', error);
         toast.error('Failed to load your mood entries');
+        dispatch(addMoodFailure('Failed to load mood entries'));
       }
     };
 
-    fetchMoods();
+    if (token) {
+      fetchMoods();
+    }
   }, [dispatch, token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,23 +44,61 @@ const MoodTracker: React.FC = () => {
     
     try {
       dispatch(addMoodStart());
-      const response = await fetchWithAuth('/moods', {
-        method: 'POST',
-        body: JSON.stringify({ mood, note, date: new Date().toISOString() })
+      const response = await axiosInstance.post('/mood', { 
+        mood, 
+        note, 
+        date: new Date().toISOString() 
       });
       
-      if (response.ok) {
-        const data = await response.json();
-        dispatch(addMoodSuccess(data));
+      if (response?.data) {
+        dispatch(addMoodSuccess(response.data));
         setNote('');
+        setMood('neutral');
         toast.success('Mood logged successfully');
+        
+        // Refresh mood entries
+        const updatedMoods = await axiosInstance.get('/mood');
+        if (Array.isArray(updatedMoods.data)) {
+          dispatch(setMoods(updatedMoods.data));
+        }
       } else {
-        throw new Error('Failed to save mood');
+        throw new Error('Invalid response from server');
+      }
+    } catch (error: any) {
+      console.error('Error saving mood:', error);
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to save your mood entry';
+      toast.error(errorMessage);
+      dispatch(addMoodFailure(errorMessage));
+    }
+  };
+
+  const handleDeleteMood = async (id: string) => {
+    try {
+      setDeletingId(id);
+      await axiosInstance.delete(`/mood/${id}`);
+      dispatch(deleteMood(id));
+      toast.success('Mood entry deleted');
+      
+      // Refresh mood entries
+      const updatedMoods = await axiosInstance.get('/mood');
+      if (Array.isArray(updatedMoods.data)) {
+        dispatch(setMoods(updatedMoods.data));
       }
     } catch (error) {
-      console.error('Error saving mood:', error);
-      toast.error('Failed to save your mood entry');
+      console.error('Error deleting mood:', error);
+      toast.error('Failed to delete mood entry');
+    } finally {
+      setDeletingId(null);
     }
+  };
+
+  // Format date and time for display
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return {
+      date: date.toLocaleDateString(),
+      time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
   };
 
   return (
@@ -137,20 +177,44 @@ const MoodTracker: React.FC = () => {
           <p className="text-gray-500">No mood entries yet</p>
         ) : (
           <div className="space-y-4">
-            {entries.map((entry) => (
-              <div
-                key={entry.id}
-                className="border-b pb-4 last:border-b-0 last:pb-0"
-              >
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">{entry.mood}</span>
-                  <span className="text-sm text-gray-500">
-                    {new Date(entry.date).toLocaleDateString()}
-                  </span>
+            {entries.map((entry) => {
+              const datetime = formatDateTime(entry.date);
+              return (
+                <div
+                  key={entry.id}
+                  className="border-b pb-4 last:border-b-0 last:pb-0"
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="flex items-center">
+                      <span className={`font-medium ${
+                        entry.mood === 'happy' ? 'text-green-500' :
+                        entry.mood === 'neutral' ? 'text-yellow-500' :
+                        'text-blue-500'
+                      }`}>{entry.mood.charAt(0).toUpperCase() + entry.mood.slice(1)}</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm text-gray-500 flex items-center">
+                        <FiClock className="mr-1 h-3 w-3" /> 
+                        {datetime.date} at {datetime.time}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteMood(entry.id)}
+                        disabled={deletingId === entry.id}
+                        className="text-red-500 hover:text-red-700 transition-colors"
+                        aria-label="Delete mood entry"
+                      >
+                        {deletingId === entry.id ? (
+                          <div className="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full"></div>
+                        ) : (
+                          <FiTrash2 className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  {entry.note && <p className="text-gray-600 dark:text-gray-400">{entry.note}</p>}
                 </div>
-                {entry.note && <p className="text-gray-600">{entry.note}</p>}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

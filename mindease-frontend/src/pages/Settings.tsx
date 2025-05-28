@@ -7,7 +7,7 @@ import { useAppSelector } from '../store/hooks';
 const Settings = () => {
   const { user } = useAppSelector(state => state.auth);
   const [settings, setSettings] = useState({
-    darkMode: false,
+    darkMode: document.documentElement.classList.contains('dark'),
     notifications: true,
     emailNotifications: true,
     reminderTime: '09:00',
@@ -23,11 +23,28 @@ const Settings = () => {
   }, []);
 
   const handleToggle = (setting: keyof typeof settings) => {
-    setSettings((prev) => ({
-      ...prev,
-      [setting]: !prev[setting],
-    }));
-    toast.success('Settings updated!');
+    if (setting === 'darkMode') {
+      // Toggle dark mode class on html element
+      document.documentElement.classList.toggle('dark');
+      
+      // Update state
+      const newDarkMode = document.documentElement.classList.contains('dark');
+      setSettings(prev => ({
+        ...prev,
+        darkMode: newDarkMode
+      }));
+      
+      // Save user preference
+      localStorage.setItem('darkMode', String(newDarkMode));
+      
+      toast.success(`Dark mode ${newDarkMode ? 'enabled' : 'disabled'}!`);
+    } else {
+      setSettings((prev) => ({
+        ...prev,
+        [setting]: !prev[setting],
+      }));
+      toast.success('Settings updated!');
+    }
   };
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,58 +1,72 @@
 import express from 'express';
 import { protect } from '../middleware/auth';
+import { userProgress } from './moods';
 
 const router = express.Router();
 
-// Get analysis for the current user
+// Get analysis for the current user (dynamic, based on user data)
 router.get('/analysis', protect, async (req, res) => {
   try {
     const userId = (req as any).user.id;
-    
-    // In a real application, you would gather data from various collections
-    // and perform analysis to generate insights
-    
-    // For demonstration, we'll create a sample analysis response
-    const analysis = {
-      overallScore: 78,
-      overallFeedback: "Your overall mental well-being appears stable. Keep up with your daily activities and journaling.",
-      moodDistribution: {
-        happy: "35%",
-        neutral: "45%",
-        sad: "20%"
-      },
-      totalMoodEntries: 20,
-      insights: [
-        {
-          id: 1,
-          title: "Mood Pattern Detected",
-          description: "Your mood tends to improve on days when you complete activities."
-        },
-        {
-          id: 2,
-          title: "Journaling Consistency",
-          description: "Regular journaling has been associated with your improved mood."
-        }
-      ],
-      recommendations: [
-        {
-          id: 1,
-          title: "Try Morning Meditation",
-          description: "Adding a short meditation in your morning routine may help stabilize your daily mood."
-        },
-        {
-          id: 2,
-          title: "Outdoor Activity",
-          description: "Your mood records show improvement when you spend time outdoors."
-        },
-        {
-          id: 3,
-          title: "Gratitude Practice",
-          description: "Consider adding a gratitude section to your journal entries."
-        }
-      ],
-    };
-    
-    res.json(analysis);
+    const progress = userProgress[userId];
+    if (!progress) {
+      return res.json({
+        overallScore: 0,
+        insights: [],
+        recommendations: []
+      });
+    }
+    // Calculate overall wellbeing score (0-100)
+    const moodScore = progress.moodData.data.reduce((a: number, b: number) => a + b, 0) / progress.moodData.data.length * 20;
+    const activityScore = (progress.activitiesCompleted / 5) * 40; // Max 5 activities per day
+    const streakScore = Math.min(progress.streak * 4, 40); // Max 10 days streak
+    const overallScore = Math.min(100, Math.round(moodScore + activityScore + streakScore));
+    // Generate insights based on user data
+    const insights = [];
+    // Mood insights
+    if (progress.moodData.data.length > 0) {
+      const avgMood = progress.moodData.data.reduce((a: number, b: number) => a + b, 0) / progress.moodData.data.length;
+      if (avgMood < 3) {
+        insights.push("Your mood has been lower than usual. Consider trying some mood-lifting activities.");
+      } else if (avgMood > 4) {
+        insights.push("You've been maintaining a positive mood! Keep up the great work!");
+      }
+    }
+    // Activity insights
+    if (progress.activitiesCompleted > 0) {
+      insights.push(`You've completed ${progress.activitiesCompleted} activities today. ${progress.activitiesCompleted >= 3 ? 'Great job staying active!' : 'Try to complete a few more activities to boost your wellbeing.'}`);
+    }
+    // Streak insights
+    if (progress.streak > 0) {
+      insights.push(`You're on a ${progress.streak}-day streak! Consistency is key to mental wellbeing.`);
+    }
+    // Generate personalized recommendations
+    const recommendations = [];
+    // Mood-based recommendations
+    if (progress.moodData.data.length > 0) {
+      const recentMood = progress.moodData.data[progress.moodData.data.length - 1];
+      if (recentMood < 3) {
+        recommendations.push("Try a guided meditation to lift your spirits");
+        recommendations.push("Take a short walk outside to refresh your mind");
+        recommendations.push("Practice deep breathing exercises for 5 minutes");
+      }
+    }
+    // Activity-based recommendations
+    if (progress.activitiesCompleted < 3) {
+      recommendations.push("Add a quick meditation session to your routine");
+      recommendations.push("Try a 10-minute stretching exercise");
+      recommendations.push("Write down three things you're grateful for today");
+    }
+    // Streak-based recommendations
+    if (progress.streak > 0) {
+      recommendations.push("Maintain your streak by planning tomorrow's activities");
+      recommendations.push("Reflect on what's been working well for you");
+    }
+    res.json({
+      overallScore,
+      insights,
+      recommendations
+    });
   } catch (error) {
     console.error('Error fetching analysis:', error);
     res.status(500).json({ success: false, error: 'Server error' });

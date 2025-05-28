@@ -1,23 +1,8 @@
 import express from 'express';
 import { protect } from '../middleware/auth';
+import { userProgress } from './moods';
 
 const router = express.Router();
-
-// Mock data store for user progress
-let userProgress: Record<string, {
-  weeklyAverage: number;
-  streak: number;
-  activitiesCompleted: number;
-  moodData: {
-    labels: string[];
-    data: number[];
-  };
-  activityData: {
-    labels: string[];
-    data: number[];
-  };
-  achievements: { id: string; title: string; description: string }[];
-}> = {};
 
 // Get user progress data
 router.get('/', protect, async (req, res) => {

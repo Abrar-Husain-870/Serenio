@@ -6,6 +6,7 @@ import { loginSuccess } from '../store/slices/authSlice';
 import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook } from 'react-icons/fa';
 import { API_BASE_URL } from '../utils/api';
+import { restoreUserDataAfterLogin } from '../utils/userDataStorage';
 import mindeaseLogo from '../assets/mindease-logo.svg';
 
 const SignUp: React.FC = () => {
@@ -40,8 +41,14 @@ const SignUp: React.FC = () => {
       
       dispatch(loginSuccess(data));
       localStorage.setItem('token', data.token);
+      
+      // Restore user data if available (unlikely for new users, but might have guest data)
+      if (data.user && data.user.id) {
+        restoreUserDataAfterLogin(data.user.id);
+      }
+      
       toast.success('Registration successful!');
-      navigate('/');
+      navigate('/dashboard');
     } catch (error: any) {
       toast.error('Registration error: ' + error.message);
     } finally {

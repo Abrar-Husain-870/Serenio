@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { User } from '../models/User';
 
 // Extend Express Request type
 declare global {
@@ -29,6 +30,10 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
   }
+  // Check if token exists in cookies
+  else if (req.cookies && req.cookies.auth_token) {
+    token = req.cookies.auth_token;
+  }
 
   // Check if token exists
   if (!token) {
@@ -42,14 +47,19 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
       process.env.JWT_SECRET || 'your-secret-key'
     ) as TokenPayload;
 
-    // In a real app, you would fetch the user from database using decoded.userId
-    // Set the user ID on the request object
-    // Simplified mock user object that matches our User interface
-    req.user = { 
-      _id: decoded.userId,
-      id: decoded.userId,
-      name: "User",
-      email: "user@example.com"
+    // Fetch user from database
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ success: false, error: 'User not found' });
+    }
+
+    // Set the user on the request object
+    req.user = {
+      _id: user._id.toString(),
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      googleId: user.googleId
     };
 
     next();

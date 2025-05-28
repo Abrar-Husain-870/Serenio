@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FiSmile, FiBook, FiActivity, FiTrendingUp, FiCalendar } from 'react-icons/fi';
 import { Link, useLocation } from 'react-router-dom';
-import { fetchWithAuth } from '../utils/api';
+import axiosInstance from '../utils/api';
 import { useAppSelector } from '../store/hooks';
 
 interface Stats {
@@ -15,6 +15,7 @@ interface Stats {
 const Dashboard: React.FC = () => {
   const { token } = useAppSelector((state) => state.auth);
   const location = useLocation();
+  const { entries } = useAppSelector((state) => state.journal);
   const [stats, setStats] = useState<Stats>({
     currentMood: 'No entries yet',
     journalEntries: 0,
@@ -23,56 +24,53 @@ const Dashboard: React.FC = () => {
     totalActivities: 0
   });
   const [loading, setLoading] = useState(true);
+  const [entryCount, setEntryCount] = useState<number>(0);
+
+  // Update stats whenever journal entries change
+  useEffect(() => {
+    if (entries) {
+      setStats(prevStats => ({
+        ...prevStats,
+        journalEntries: entries.length
+      }));
+    }
+  }, [entries]);
 
   useEffect(() => {
     const fetchStats = async () => {
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-      
       try {
-        // Fetch real data from the backend
-        const dashboardResponse = await fetchWithAuth('/dashboard/stats');
-        
-        if (dashboardResponse.ok) {
-          const dashboardData = await dashboardResponse.json();
-          setStats(dashboardData);
+        const dashboardResponse = await axiosInstance.get('/dashboard/stats');
+        setStats(dashboardResponse.data);
+        // Get journal entries count - use redux store entries if available
+        if (entries && Array.isArray(entries) && entries.length > 0) {
+          setStats(prevStats => ({
+            ...prevStats,
+            journalEntries: entries.length
+          }));
         } else {
-          console.error('Failed to fetch dashboard data');
+          const journalResponse = await axiosInstance.get('/journal');
+          if (Array.isArray(journalResponse.data)) {
+            setStats(prevStats => ({
+              ...prevStats,
+              journalEntries: journalResponse.data.length || 0
+            }));
+          }
         }
-        
-        // Get journal entries count
-        const journalResponse = await fetchWithAuth('/journal');
-        if (journalResponse.ok) {
-          const journalData = await journalResponse.json();
+        const activitiesResponse = await axiosInstance.get('/activities');
+        if (Array.isArray(activitiesResponse.data)) {
           setStats(prevStats => ({
             ...prevStats,
-            journalEntries: journalData.length || 0
+            activities: activitiesResponse.data.filter((a: any) => a.completed).length || 0,
+            totalActivities: activitiesResponse.data.length || 0
           }));
         }
-        
-        // Get activities data
-        const activitiesResponse = await fetchWithAuth('/activities');
-        if (activitiesResponse.ok) {
-          const activitiesData = await activitiesResponse.json();
-          setStats(prevStats => ({
-            ...prevStats,
-            activities: activitiesData.filter((a: any) => a.completed).length || 0,
-            totalActivities: activitiesData.length || 0
-          }));
-        }
-        
-        // Get mood data
-        const moodResponse = await fetchWithAuth('/moods');
-        if (moodResponse.ok) {
-          const moodData = await moodResponse.json();
-          if (moodData.length > 0) {
+        const moodResponse = await axiosInstance.get('/mood');
+        if (Array.isArray(moodResponse.data)) {
+          if (moodResponse.data.length > 0) {
             // Get the most recent mood
-            const latestMood = moodData.sort((a: any, b: any) => 
+            const latestMood = moodResponse.data.sort((a: any, b: any) => 
               new Date(b.date).getTime() - new Date(a.date).getTime()
             )[0];
-            
             setStats(prevStats => ({
               ...prevStats,
               currentMood: latestMood.mood
@@ -85,9 +83,25 @@ const Dashboard: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchStats();
-  }, [token, location.pathname]);
+  }, [entries]);
+
+  useEffect(() => {
+    // Always fetch the latest journal entries from the backend for accurate count
+    const fetchJournalCount = async () => {
+      try {
+        const response = await axiosInstance.get('/journal');
+        if (Array.isArray(response.data)) {
+          setEntryCount(response.data.length);
+        } else {
+          setEntryCount(0);
+        }
+      } catch {
+        setEntryCount(0);
+      }
+    };
+    fetchJournalCount();
+  }, []);
 
   // Show authentication required message if no token
   if (!token) {
@@ -142,7 +156,7 @@ const Dashboard: React.FC = () => {
           </div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Journal Entries</h2>
           <p className="text-2xl font-bold text-secondary-600 dark:text-secondary-400 mt-1">
-            {loading ? 'Loading...' : stats.journalEntries}
+            {loading ? 'Loading...' : entryCount}
           </p>
         </Link>
         <Link to="/activities" className="card flex flex-col items-center text-center transform hover:scale-105 transition-transform duration-200">

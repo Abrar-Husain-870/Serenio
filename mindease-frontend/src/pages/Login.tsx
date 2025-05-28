@@ -5,6 +5,8 @@ import { loginStart, loginSuccess, loginFailure } from '../store/slices/authSlic
 import { FcGoogle } from 'react-icons/fc';
 import { toast } from 'react-toastify';
 import { API_BASE_URL } from '../utils/api';
+import axiosInstance from '../utils/api';
+import { restoreUserDataAfterLogin } from '../utils/userDataStorage';
 import mindeaseLogo from '../assets/mindease-logo.svg';
 
 const Login: React.FC = () => {
@@ -20,29 +22,40 @@ const Login: React.FC = () => {
     dispatch(loginStart());
     
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      const { data } = await axiosInstance.post('/auth/login', {
+        email,
+        password
       });
       
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
+      if (!data.success && data.error) {
+        throw new Error(data.error);
       }
       
       localStorage.removeItem('isGoogleLogin');
       
-      dispatch(loginSuccess(data));
+      // Ensure we have both user and token in the response
+      if (!data.user || !data.token) {
+        throw new Error('Invalid response from server');
+      }
+      
+      dispatch(loginSuccess({
+        user: data.user,
+        token: data.token
+      }));
+      
       localStorage.setItem('token', data.token);
+      
+      // Restore user data if available
+      if (data.user && data.user.id) {
+        restoreUserDataAfterLogin(data.user.id);
+      }
+      
       toast.success('Login successful!');
-      navigate('/');
+      navigate('/dashboard');
     } catch (error: any) {
-      dispatch(loginFailure(error.message));
-      toast.error(error.message || 'Login failed');
+      const errorMessage = error.response?.data?.error || error.message || 'Login failed';
+      dispatch(loginFailure(errorMessage));
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -110,8 +110,8 @@ export async function generateMentalHealthReview(userData: any): Promise<MentalH
       // Extract recommendations by looking for numbered or bullet points
       recommendations = parts[1]
         .split(/\d+\.|•|-/)
-        .filter(item => item.trim().length > 0)
-        .map(item => item.trim());
+        .filter((item: string) => item.trim().length > 0)
+        .map((item: string) => item.trim());
     }
     
     if (recommendations.length === 0) {

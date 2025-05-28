@@ -1,9 +1,9 @@
 import { FiStar, FiAlertCircle, FiCheckCircle, FiClock, FiTarget } from 'react-icons/fi';
 import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { addActivity, toggleActivity, setActivities } from '../store/slices/activitySlice';
+import { addActivity, toggleActivity, setActivities, deleteActivity } from '../store/slices/activitySlice';
 import { toast } from 'react-toastify';
-import { fetchWithAuth } from '../utils/api';
+import axiosInstance from '../utils/api';
 
 const activitySuggestions = [
   {
@@ -68,22 +68,15 @@ const Activities: React.FC = () => {
   useEffect(() => {
     const fetchActivities = async () => {
       if (!token) return;
-      
       try {
         setLoading(true);
-        const response = await fetchWithAuth('/activities');
-        
-        if (response.ok) {
-          const data = await response.json();
-          dispatch(setActivities(data));
-          
-          // If there are no active activities, show completed ones
-          if (data.filter((activity: any) => !activity.completed).length === 0 && 
-              data.filter((activity: any) => activity.completed).length > 0) {
+        const response = await axiosInstance.get('/activities');
+        if (Array.isArray(response.data)) {
+          dispatch(setActivities(response.data));
+          if (response.data.filter((activity: any) => !activity.completed).length === 0 && 
+              response.data.filter((activity: any) => activity.completed).length > 0) {
             setShowCompleted(true);
           }
-        } else {
-          throw new Error('Failed to fetch activities');
         }
       } catch (error) {
         console.error('Error fetching activities:', error);
@@ -92,7 +85,6 @@ const Activities: React.FC = () => {
         setLoading(false);
       }
     };
-    
     fetchActivities();
   }, [token, dispatch]);
 
@@ -103,31 +95,47 @@ const Activities: React.FC = () => {
       toast.error('Please log in to add activities');
       return;
     }
+
+    const durationNum = Number(duration);
+
+    // Check for duplicate activity
+    const isDuplicate = activities.some(
+      activity => 
+        activity.title.toLowerCase() === title.toLowerCase() && 
+        activity.description.toLowerCase() === description.toLowerCase() &&
+        activity.type === type &&
+        activity.duration === durationNum
+    );
+
+    if (isDuplicate) {
+      toast.error('This activity already exists');
+      return;
+    }
     
     try {
       setLoading(true);
-      const response = await fetchWithAuth('/activities', {
-        method: 'POST',
-        body: JSON.stringify({
-          title,
-          description,
-          type,
-          duration,
-          completed: false,
-          date: new Date().toISOString(),
-        }),
+      const response = await axiosInstance.post('/activities', {
+        title,
+        description,
+        type,
+        duration: durationNum,
+        completed: false,
+        date: new Date().toISOString()
       });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to add activity');
+      
+      if (response.data) {
+        dispatch(addActivity(response.data));
+        toast.success('Activity added successfully!');
+        setTitle('');
+        setDescription('');
+        setType('meditation');
+        setDuration('15');
+      } else {
+        throw new Error('Failed to add activity');
       }
-      dispatch(addActivity(data));
-      toast.success('Activity added successfully!');
-      setTitle('');
-      setDescription('');
-      setDuration('15');
     } catch (error: any) {
-      toast.error('Error adding activity: ' + error.message);
+      console.error('Error adding activity:', error);
+      toast.error(error.response?.data?.error || 'Failed to add activity');
     } finally {
       setLoading(false);
     }
@@ -140,89 +148,52 @@ const Activities: React.FC = () => {
     }
     
     try {
-      // Show loading toast
-      const loadingToastId = toast.loading("Updating activity...");
+      setLoading(true);
+      const response = await axiosInstance.put(`/activities/${id}/toggle`);
       
-      // Set a timeout to automatically dismiss the toast after 10 seconds
-      const timeoutId = setTimeout(() => {
-        toast.dismiss(loadingToastId);
-        toast.error("Request timed out. Please try again.");
-      }, 10000);
-      
-      try {
-        // First try with PUT method since the server might be configured for PUT rather than PATCH
-        let response = await fetchWithAuth(`/activities/${id}/toggle`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({}) // Add an empty body
-        });
+      if (response.data) {
+        dispatch(toggleActivity(id));
         
-        // If PUT fails with method not allowed, try PATCH as fallback
-        if (response.status === 405) {
-          response = await fetchWithAuth(`/activities/${id}/toggle`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({}) // Add an empty body
-          });
-        }
-        
-        // Always dismiss the loading toast
-        toast.dismiss(loadingToastId);
-        // Clear the timeout
-        clearTimeout(timeoutId);
-        
-        // Parse response data
-        let responseData;
+        // Update progress on the backend
         try {
-          responseData = await response.json();
-        } catch (e) {
-          responseData = {};
+          await axiosInstance.post('/progress/update', { activityCompleted: true });
+        } catch (error) {
+          console.error('Error updating progress:', error);
         }
         
-        if (!response.ok) {
-          throw new Error(responseData.error || `Failed to toggle activity (${response.status})`);
-        }
-        
-        // First check how many active activities will remain
-        const updatingActivity = activities.find(a => a.id.toString() === id);
-        if (updatingActivity && !updatingActivity.completed) {
-          // This is an active activity being marked complete
-          const remainingActiveCount = activeActivities.length - 1;
-          
-          // Update local state
-          dispatch(toggleActivity(id));
-          
-          // If this was the last active activity, show completed view
-          if (remainingActiveCount === 0 && completedActivities.length > 0) {
-            setShowCompleted(true);
-          }
-          
-          // Update progress on the backend
-          fetchWithAuth('/progress/update', {
-            method: 'POST',
-            body: JSON.stringify({ activityCompleted: true })
-          }).catch(error => {
-            console.error('Error updating progress:', error);
-          });
-        } else {
-          // Simply update local state for other cases
-          dispatch(toggleActivity(id));
-        }
-        
-        toast.success('Activity updated!');
-      } catch (error) {
-        // Make sure to dismiss the loading toast and clear timeout in case of error
-        toast.dismiss(loadingToastId);
-        clearTimeout(timeoutId);
-        throw error; // Re-throw to be caught by outer catch block
+        toast.success('Activity updated successfully!');
       }
     } catch (error: any) {
       console.error('Toggle activity error:', error);
-      toast.error('Error updating activity: ' + (error.message || 'Unknown error'));
+      toast.error(error.response?.data?.error || 'Failed to update activity');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!token) {
+      toast.error('Please log in to delete activities');
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to delete this activity?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axiosInstance.delete(`/activities/${id}`);
+      
+      if (response.status === 200) {
+        dispatch(deleteActivity(id));
+        toast.success('Activity deleted successfully!');
+      }
+    } catch (error: any) {
+      console.error('Delete activity error:', error);
+      toast.error(error.response?.data?.error || 'Failed to delete activity');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -254,30 +225,30 @@ const Activities: React.FC = () => {
         {/* Add Activity Form */}
         <div className="card" id="activity-form">
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Add New Activity</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
               <label className="block text-gray-700 dark:text-gray-200 mb-2">Title</label>
               <input
                 type="text"
-                className="input"
+                className="input w-full"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
               />
             </div>
-            <div className="mb-4">
+            <div>
               <label className="block text-gray-700 dark:text-gray-200 mb-2">Description</label>
               <textarea
-                className="input" 
+                className="input w-full min-h-[100px]"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
               />
             </div>
-            <div className="mb-4">
+            <div>
               <label className="block text-gray-700 dark:text-gray-200 mb-2">Type</label>
               <select
-                className="input"
+                className="input w-full"
                 value={type}
                 onChange={(e) => setType(e.target.value)}
                 required
@@ -293,11 +264,11 @@ const Activities: React.FC = () => {
                 <option value="stretching">Stretching</option>
               </select>
             </div>
-            <div className="mb-4">
+            <div>
               <label className="block text-gray-700 dark:text-gray-200 mb-2">Duration (minutes)</label>
               <input
                 type="number"
-                className="input"
+                className="input w-full"
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
                 min="1"
@@ -333,7 +304,6 @@ const Activities: React.FC = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
             </div>
           ) : showCompleted ? (
-            // Show completed activities
             completedActivities.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 space-y-3 text-center">
                 <FiCheckCircle className="w-10 h-10 text-gray-400" />
@@ -362,21 +332,23 @@ const Activities: React.FC = () => {
                           </span>
                         </div>
                       </div>
-                      <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-800/40 px-2 py-1 rounded">
-                        Completed
-                      </span>
+                      <button
+                        onClick={() => handleDelete(activity.id.toString())}
+                        className="px-3 py-1 rounded flex items-center bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 ))}
               </div>
             )
           ) : (
-            // Show active activities
             activeActivities.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 space-y-3 text-center">
                 <FiAlertCircle className="w-10 h-10 text-gray-400" />
                 <p className="text-gray-500">No active activities</p>
-                <p className="text-sm text-gray-400">Try one of our suggested activities below</p>
+                <p className="text-sm text-gray-400">Add some activities to get started</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -398,12 +370,20 @@ const Activities: React.FC = () => {
                           </span>
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleToggle(activity.id.toString())}
-                        className="px-3 py-1 rounded flex items-center bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 hover:bg-green-500 hover:text-white transition-colors"
-                      >
-                        Mark Complete
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleToggle(activity.id.toString())}
+                          className="px-3 py-1 rounded flex items-center bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 hover:bg-green-500 hover:text-white transition-colors"
+                        >
+                          Mark Complete
+                        </button>
+                        <button
+                          onClick={() => handleDelete(activity.id.toString())}
+                          className="px-3 py-1 rounded flex items-center bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}

@@ -1,0 +1,55 @@
+MindEase App Features
+
+MindEase is a comprehensive mental wellness app designed to support your mental health journey. Here are the key features:
+
+1. Mood Tracking
+- Daily mood logging
+- Mood pattern analysis
+- Trigger identification
+- Progress visualization
+- Custom mood tags
+
+2. Journaling
+- Secure private journal
+- Mood-based prompts
+- Gratitude journaling
+- Reflection exercises
+- Export functionality
+
+3. Activities
+- Guided meditations
+- Breathing exercises
+- Progressive muscle relaxation
+- Mindfulness practices
+- Cognitive behavioral exercises
+- Activity completion tracking
+
+4. Progress Tracking
+- Mental health assessments
+- Progress visualization
+- Achievement tracking
+- Goal setting
+- Milestone celebrations
+
+5. Resources
+- Educational content
+- Self-help guides
+- Crisis resources
+- Professional directory
+- Community support
+
+6. AI Assistant
+- 24/7 support
+- Personalized responses
+- Activity recommendations
+- Progress insights
+- Crisis intervention guidance
+
+7. Privacy & Security
+- End-to-end encryption
+- Secure data storage
+- Privacy controls
+- Data export options
+- Account management
+
+Remember: MindEase is designed to complement professional mental health care, not replace it. Always consult with healthcare providers for medical advice. 

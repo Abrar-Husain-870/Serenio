@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { FiTrendingUp, FiAward, FiCalendar, FiChevronRight } from 'react-icons/fi';
 import { BiBrain } from 'react-icons/bi';
 import {
@@ -16,7 +16,8 @@ import {
 import { Line, Bar } from 'react-chartjs-2';
 import { useAppSelector } from '../store/hooks';
 import { toast } from 'react-toastify';
-import { API_BASE_URL, fetchWithAuth } from '../utils/api';
+import axiosInstance from '../utils/api';
+import { useLocation } from 'react-router-dom';
 
 ChartJS.register(
   CategoryScale,
@@ -45,6 +46,8 @@ interface AssessmentQuestion {
 
 const Progress = () => {
   const { token } = useAppSelector(state => state.auth);
+  const { entries: moodEntries } = useAppSelector(state => state.mood);
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     weeklyAverage: 0,
@@ -83,81 +86,113 @@ const Progress = () => {
     { id: 'q10', text: 'How hopeful do you feel about the future?' }
   ];
 
+  // Process mood entries to generate chart data
   useEffect(() => {
-    const fetchProgressData = async () => {
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        
-        // Fetch progress stats using fetchWithAuth
-        const response = await fetchWithAuth('/progress');
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch progress data');
+    if (moodEntries && moodEntries.length > 0) {
+      // Sort entries by date
+      const sortedEntries = [...moodEntries].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+      
+      // Get up to the last 7 entries or fewer if not enough entries
+      const recentEntries = sortedEntries.slice(-7);
+      
+      // Create arrays for labels and data
+      const labels = recentEntries.map(entry => 
+        new Date(entry.date).toLocaleDateString('en-US', { weekday: 'short' })
+      );
+      
+      // Convert mood to numeric value for chart
+      const data = recentEntries.map(entry => {
+        switch (entry.mood) {
+          case 'happy': return 5;  // High value for happy
+          case 'neutral': return 3; // Middle value for neutral
+          case 'sad': return 1;    // Low value for sad
+          default: return 0;
         }
+      });
+      
+      // Update stats with the mood data
+      setStats(prev => ({
+        ...prev,
+        moodData: {
+          labels,
+          data
+        }
+      }));
+    }
+  }, [moodEntries]);
 
-        const data = await response.json();
+  // Extract the fetchProgressData function so it can be reused
+  const fetchProgressData = useCallback(async () => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Fetch progress stats using axiosInstance
+      const response = await axiosInstance.get('/progress');
+
+      if (response?.data) {
+        // Ensure we have valid data for all fields
+        const progressData = response.data;
         
-        setStats({
-          weeklyAverage: data.weeklyAverage || 0,
-          streak: data.streak || 0,
-          activitiesCompleted: data.activitiesCompleted || 0,
-          moodData: {
-            labels: data.moodData?.labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            data: data.moodData?.data || [0, 0, 0, 0, 0, 0, 0]
+        setStats(prevStats => ({
+          weeklyAverage: progressData.weeklyAverage || 0,
+          streak: progressData.streak || 0,
+          activitiesCompleted: progressData.activitiesCompleted || 0,
+          // Keep the mood data from our processing above if we have it
+          moodData: prevStats.moodData.labels.length > 0 ? prevStats.moodData : {
+            labels: progressData.moodData?.labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            data: progressData.moodData?.data || [0, 0, 0, 0, 0, 0, 0]
           },
           activityData: {
-            labels: data.activityData?.labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            data: data.activityData?.data || [0, 0, 0, 0, 0, 0, 0]
+            labels: progressData.activityData?.labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            data: progressData.activityData?.data || [0, 0, 0, 0, 0, 0, 0]
           },
-          achievements: data.achievements || []
-        });
-        
-        // Fetch assessment history
-        fetchAssessmentHistory();
-      } catch (error) {
-        console.error('Error fetching progress data:', error);
-        toast.error('Failed to load progress data');
-        
-        // Set empty default values, not demo data
-        setStats({
-          weeklyAverage: 0,
-          streak: 0,
-          activitiesCompleted: 0,
-          moodData: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            data: [0, 0, 0, 0, 0, 0, 0]
-          },
-          activityData: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            data: [0, 0, 0, 0, 0, 0, 0]
-          },
-          achievements: []
-        });
-      } finally {
-        setLoading(false);
+          achievements: progressData.achievements || []
+        }));
+      } else {
+        throw new Error('Invalid response from server');
       }
-    };
-
-    fetchProgressData();
+    } catch (error: any) {
+      console.error('Error fetching progress data:', error);
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to load progress data';
+      toast.error(errorMessage);
+      
+      // Keep mood data if we have it from the mood entries
+      setStats(prevStats => ({
+        weeklyAverage: 0,
+        streak: 0,
+        activitiesCompleted: 0,
+        moodData: prevStats.moodData.labels.length > 0 ? prevStats.moodData : {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          data: [0, 0, 0, 0, 0, 0, 0]
+        },
+        activityData: {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          data: [0, 0, 0, 0, 0, 0, 0]
+        },
+        achievements: []
+      }));
+    } finally {
+      setLoading(false);
+    }
   }, [token]);
 
-  // Fetch assessment history from backend
-  const fetchAssessmentHistory = async () => {
+  // Fetch assessment history
+  const fetchAssessmentHistory = useCallback(async () => {
     if (!token) return;
     
     try {
-      const response = await fetchWithAuth('/ai/assessment/history');
+      const response = await axiosInstance.get('/ai/assessment/history');
       
-      if (response.ok) {
-        const data = await response.json();
-        setAssessmentHistory(data.assessments || []);
+      if (response?.data?.assessments) {
+        setAssessmentHistory(response.data.assessments);
       } else {
-        // If backend fails, set empty array, not demo data
         setAssessmentHistory([]);
       }
     } catch (error) {
@@ -165,7 +200,21 @@ const Progress = () => {
       toast.error('Failed to load assessment history');
       setAssessmentHistory([]);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (token) {
+      fetchProgressData();
+      fetchAssessmentHistory();
+    }
+  }, [token, fetchProgressData, fetchAssessmentHistory]);
+
+  // Add this useEffect to refetch data when navigating between pages
+  useEffect(() => {
+    if (token) {
+      fetchProgressData();
+    }
+  }, [location.pathname, token, fetchProgressData]);
 
   const handleAnswerChange = (questionId: string, value: number) => {
     setAssessmentAnswers(prev => ({
@@ -183,29 +232,25 @@ const Progress = () => {
     setAssessmentLoading(true);
     
     try {
-      const response = await fetchWithAuth('/ai/assessment/generate', {
-        method: 'POST',
-        body: JSON.stringify({ answers: assessmentAnswers })
+      const response = await axiosInstance.post('/ai/assessment/generate', {
+        answers: assessmentAnswers
       });
       
-      if (response.ok) {
-        const result = await response.json();
-        setAssessmentResult(result);
-        
+      if (response?.data) {
+        setAssessmentResult(response.data);
         // Update assessment history
         fetchAssessmentHistory();
+        setShowAssessment(false);
       } else {
         throw new Error('Failed to generate assessment');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating assessment:', error);
-      toast.error('Failed to generate mental health assessment');
-      
-      // Clear result on error
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to generate mental health assessment';
+      toast.error(errorMessage);
       setAssessmentResult(null);
     } finally {
       setAssessmentLoading(false);
-      // Reset answers for next time
       setAssessmentAnswers({});
     }
   };
@@ -249,11 +294,42 @@ const Progress = () => {
       legend: {
         position: 'top' as const,
       },
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            const value = context.raw;
+            let moodLabel = 'Unknown';
+            
+            if (value >= 4.5) moodLabel = 'Very Happy';
+            else if (value >= 3.5) moodLabel = 'Happy';
+            else if (value >= 2.5) moodLabel = 'Neutral';
+            else if (value >= 1.5) moodLabel = 'Sad';
+            else if (value > 0) moodLabel = 'Very Sad';
+            
+            return `Mood: ${moodLabel} (${value})`;
+          }
+        }
+      }
     },
     scales: {
       y: {
         beginAtZero: true,
         max: 5,
+        ticks: {
+          stepSize: 1,
+          callback: function(tickValue: number | string) {
+            const value = Number(tickValue);
+            switch(value) {
+              case 5: return 'Very Happy';
+              case 4: return 'Happy';
+              case 3: return 'Neutral';
+              case 2: return 'Sad';
+              case 1: return 'Very Sad';
+              case 0: return '';
+              default: return '';
+            }
+          }
+        }
       },
     },
   };

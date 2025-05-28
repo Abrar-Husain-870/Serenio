@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const huggingfaceService_1 = require("../utils/huggingfaceService");
+const chatbot_1 = require("../rag/chatbot");
 const router = express_1.default.Router();
 // Middleware to check if user is authenticated
 const isAuthenticated = (req, res, next) => {
@@ -57,8 +58,17 @@ router.post('/chatbot/query', async (req, res) => {
         if (!query) {
             return res.status(400).json({ error: 'Query is required' });
         }
-        const response = await (0, huggingfaceService_1.processChatbotQuery)(query);
-        res.json(response);
+        // Try RAG-enhanced chatbot first
+        try {
+            const response = await (0, chatbot_1.processChatbotQueryWithRAG)(query);
+            return res.json(response);
+        }
+        catch (ragError) {
+            console.error('RAG chatbot error, falling back to basic chatbot:', ragError);
+            // Fallback to basic chatbot if RAG fails
+            const response = await (0, huggingfaceService_1.processChatbotQuery)(query);
+            return res.json(response);
+        }
     }
     catch (error) {
         console.error('Error processing chatbot query:', error);
