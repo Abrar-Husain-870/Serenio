@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FiSmile, FiBook, FiActivity, FiTrendingUp, FiCalendar } from 'react-icons/fi';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import axiosInstance from '../utils/api';
 import { useAppSelector } from '../store/hooks';
 
@@ -14,7 +14,6 @@ interface Stats {
 
 const Dashboard: React.FC = () => {
   const { token } = useAppSelector((state) => state.auth);
-  const navigate = useNavigate();
   const { entries } = useAppSelector((state) => state.journal);
   const [stats, setStats] = useState<Stats>({
     currentMood: 'No entries yet',

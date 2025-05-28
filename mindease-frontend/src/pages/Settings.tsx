@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiBell, FiLock, FiUser, FiMoon, FiSun } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { useAppSelector } from '../store/hooks';
