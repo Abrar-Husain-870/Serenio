@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/index';
 import { FaRegCommentDots } from 'react-icons/fa';
+import { API_BASE_URL } from '../utils/api';
 
 const Chatbot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,7 +27,7 @@ const Chatbot: React.FC = () => {
         throw new Error('Please log in to use the chatbot');
       }
 
-      const response = await fetch('http://localhost:3001/api/chatbot/query', {
+      const response = await fetch(`${API_BASE_URL}/chatbot/query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
