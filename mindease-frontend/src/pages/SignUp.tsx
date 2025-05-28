@@ -61,7 +61,7 @@ const SignUp: React.FC = () => {
     // Clear any existing tokens before redirecting to Google OAuth
     localStorage.removeItem('token');
     localStorage.removeItem('isGoogleLogin');
-    window.location.href = `${API_BASE_URL}/auth/google`;
+    window.location.href = `${API_BASE_URL}/api/auth/google`;
   };
   
   const handleFacebookLogin = () => {

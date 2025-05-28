@@ -64,7 +64,7 @@ const Login: React.FC = () => {
   const handleGoogleLogin = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('isGoogleLogin');
-    window.location.href = `${API_BASE_URL}/auth/google`;
+    window.location.href = `${API_BASE_URL}/api/auth/google`;
   };
 
   return (
