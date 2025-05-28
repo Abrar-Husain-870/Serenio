@@ -7,6 +7,8 @@ const express_1 = __importDefault(require("express"));
 const auth_1 = require("../middleware/auth");
 const moods_1 = require("./moods");
 const router = express_1.default.Router();
+// Store completed challenges
+const completedChallenges = {};
 // Get user progress data
 router.get('/', auth_1.protect, async (req, res) => {
     try {
@@ -28,7 +30,18 @@ router.get('/', auth_1.protect, async (req, res) => {
                 achievements: []
             };
         }
-        res.json(moods_1.userProgress[userId]);
+        // Get today's date in YYYY-MM-DD format
+        const today = new Date().toISOString().split('T')[0];
+        // Initialize completed challenges for user if not exists
+        if (!completedChallenges[userId]) {
+            completedChallenges[userId] = new Set();
+        }
+        // Add completed challenges to the response
+        const response = {
+            ...moods_1.userProgress[userId],
+            completedChallenges: Array.from(completedChallenges[userId])
+        };
+        res.json(response);
     }
     catch (error) {
         console.error('Error fetching progress:', error);
@@ -39,7 +52,7 @@ router.get('/', auth_1.protect, async (req, res) => {
 router.post('/update', auth_1.protect, async (req, res) => {
     try {
         const userId = req.user.id;
-        const { activityCompleted } = req.body;
+        const { activityCompleted, challengeCompleted } = req.body;
         // Initialize progress data if it doesn't exist for this user
         if (!moods_1.userProgress[userId]) {
             moods_1.userProgress[userId] = {
@@ -57,8 +70,12 @@ router.post('/update', auth_1.protect, async (req, res) => {
                 achievements: []
             };
         }
+        // Initialize completed challenges for user if not exists
+        if (!completedChallenges[userId]) {
+            completedChallenges[userId] = new Set();
+        }
         // Update activities completed count
-        if (activityCompleted) {
+        if (activityCompleted === true) {
             moods_1.userProgress[userId].activitiesCompleted += 1;
             // Update today's activity count in the chart data
             const today = new Date().getDay();
@@ -88,10 +105,23 @@ router.post('/update', auth_1.protect, async (req, res) => {
                 });
             }
         }
+        else if (activityCompleted === false) {
+            // Reset activities completed count and activity data when an activity is deleted
+            moods_1.userProgress[userId].activitiesCompleted = 0;
+            moods_1.userProgress[userId].activityData.data = [0, 0, 0, 0, 0, 0, 0];
+        }
+        // Handle challenge completion
+        if (challengeCompleted) {
+            const today = new Date().toISOString().split('T')[0];
+            completedChallenges[userId].add(today);
+        }
         res.json({
             success: true,
             message: 'Progress updated successfully',
-            data: moods_1.userProgress[userId]
+            data: {
+                ...moods_1.userProgress[userId],
+                completedChallenges: Array.from(completedChallenges[userId])
+            }
         });
     }
     catch (error) {

@@ -81,4 +81,17 @@ router.get('/shared', auth_1.protect, async (req, res) => {
         res.status(500).json({ message: 'Error fetching shared journals' });
     }
 });
+// Community journals endpoint
+router.get('/community', async (req, res) => {
+    try {
+        const communityJournals = await journal_1.default.find({ isShared: true })
+            .populate('user', 'name')
+            .sort({ createdAt: -1 });
+        res.json(communityJournals);
+    }
+    catch (error) {
+        console.error('Error fetching community journals:', error);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
 exports.default = router;

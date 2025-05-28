@@ -58,13 +58,26 @@ const updateMoodDataInProgress = (userId) => {
         const sum = data.reduce((acc, val) => acc + val, 0);
         exports.userProgress[userId].weeklyAverage = sum / data.length;
     }
+    else {
+        // Reset mood data if no moods exist
+        exports.userProgress[userId].moodData = {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            data: [0, 0, 0, 0, 0, 0, 0]
+        };
+        exports.userProgress[userId].weeklyAverage = 0;
+    }
 };
-// Get all mood entries for the current user
+// Get all moods for the current user
 router.get('/', auth_1.protect, async (req, res) => {
     try {
         const userId = req.user.id;
         const userMoods = moods.filter(mood => mood.userId === userId);
-        res.json(userMoods);
+        // Map to always return 'note' field
+        const mappedMoods = userMoods.map(mood => ({
+            ...mood,
+            note: mood.note || mood.notes || ''
+        }));
+        res.json(mappedMoods);
     }
     catch (error) {
         console.error('Error fetching moods:', error);
@@ -75,20 +88,15 @@ router.get('/', auth_1.protect, async (req, res) => {
 router.post('/', auth_1.protect, async (req, res) => {
     try {
         const userId = req.user.id;
-        const { mood, note } = req.body;
-        // Validate required fields
-        if (!mood) {
-            return res.status(400).json({ success: false, error: 'Please provide mood value' });
-        }
+        const { mood, notes } = req.body;
         const newMood = {
             id: nextId++,
             userId,
             mood,
-            note: note || '',
-            date: req.body.date || new Date().toISOString()
+            notes,
+            date: new Date().toISOString()
         };
         moods.push(newMood);
-        // Update progress data with new mood info
         updateMoodDataInProgress(userId);
         res.status(201).json(newMood);
     }
@@ -102,14 +110,25 @@ router.delete('/:id', auth_1.protect, async (req, res) => {
     try {
         const userId = req.user.id;
         const moodId = parseInt(req.params.id);
-        const initialLength = moods.length;
-        moods = moods.filter(mood => !(mood.id === moodId && mood.userId === userId));
-        if (moods.length === initialLength) {
-            return res.status(404).json({ success: false, error: 'Mood entry not found' });
+        // Find and remove the mood
+        const moodIndex = moods.findIndex(mood => mood.id === moodId && mood.userId === userId);
+        if (moodIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Mood not found' });
         }
+        moods.splice(moodIndex, 1);
         // Update progress data after deletion
         updateMoodDataInProgress(userId);
-        res.json({ success: true, message: 'Mood entry deleted' });
+        // Force reset if no moods remain
+        const userMoods = moods.filter(mood => mood.userId === userId);
+        if (userMoods.length === 0) {
+            exports.userProgress[userId].moodData = {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                data: [0, 0, 0, 0, 0, 0, 0]
+            };
+            exports.userProgress[userId].weeklyAverage = 0;
+            console.log('All moods deleted: moodData reset for user', userId);
+        }
+        res.json({ success: true });
     }
     catch (error) {
         console.error('Error deleting mood:', error);

@@ -125,7 +125,7 @@ router.get('/analysis', auth_1.protect, (req, res) => {
         const moodScore = progress.moodData.data.reduce((a, b) => a + b, 0) / progress.moodData.data.length * 20;
         const activityScore = (progress.activitiesCompleted / 5) * 40; // Max 5 activities per day
         const streakScore = Math.min(progress.streak * 4, 40); // Max 10 days streak
-        const overallScore = Math.round(moodScore + activityScore + streakScore);
+        const overallScore = Math.min(100, Math.round(moodScore + activityScore + streakScore));
         // Generate insights based on user data
         const insights = [];
         // Mood insights

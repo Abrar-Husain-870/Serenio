@@ -20,39 +20,54 @@ router.get('/analysis', auth_1.protect, async (req, res) => {
             });
         }
         // Calculate overall wellbeing score (0-100)
-        const moodScore = progress.moodData.data.reduce((a, b) => a + b, 0) / progress.moodData.data.length * 20;
-        const activityScore = (progress.activitiesCompleted / 5) * 40; // Max 5 activities per day
-        const streakScore = Math.min(progress.streak * 4, 40); // Max 10 days streak
-        const overallScore = Math.round(moodScore + activityScore + streakScore);
+        // Only consider mood and activities, with equal weight
+        let moodScore = 0;
+        let hasValidMood = false;
+        if (progress.moodData.data.length > 0) {
+            // Filter out zero values (uninitialized mood entries)
+            const validMoodData = progress.moodData.data.filter((value) => value > 0);
+            if (validMoodData.length > 0) {
+                hasValidMood = true;
+                const avgMood = validMoodData.reduce((a, b) => a + b, 0) / validMoodData.length;
+                moodScore = (avgMood / 5) * 50; // Convert 0-5 scale to 0-50 points
+            }
+        }
+        // Calculate activity score based on completed activities
+        const hasValidActivity = progress.activitiesCompleted > 0;
+        const activityScore = hasValidActivity ? Math.min((progress.activitiesCompleted / 5) * 50, 50) : 0;
+        // If no valid mood and no valid activity, score is 0
+        const overallScore = hasValidMood || hasValidActivity ? Math.round(moodScore + activityScore) : 0;
         // Generate insights based on user data
         const insights = [];
         // Mood insights
         if (progress.moodData.data.length > 0) {
-            const avgMood = progress.moodData.data.reduce((a, b) => a + b, 0) / progress.moodData.data.length;
-            if (avgMood < 3) {
-                insights.push("Your mood has been lower than usual. Consider trying some mood-lifting activities.");
-            }
-            else if (avgMood > 4) {
-                insights.push("You've been maintaining a positive mood! Keep up the great work!");
+            const validMoodData = progress.moodData.data.filter((value) => value > 0);
+            if (validMoodData.length > 0) {
+                const avgMood = validMoodData.reduce((a, b) => a + b, 0) / validMoodData.length;
+                if (avgMood < 3) {
+                    insights.push("Your mood has been lower than usual. Consider trying some mood-lifting activities.");
+                }
+                else if (avgMood > 4) {
+                    insights.push("You've been maintaining a positive mood! Keep up the great work!");
+                }
             }
         }
         // Activity insights
         if (progress.activitiesCompleted > 0) {
             insights.push(`You've completed ${progress.activitiesCompleted} activities today. ${progress.activitiesCompleted >= 3 ? 'Great job staying active!' : 'Try to complete a few more activities to boost your wellbeing.'}`);
         }
-        // Streak insights
-        if (progress.streak > 0) {
-            insights.push(`You're on a ${progress.streak}-day streak! Consistency is key to mental wellbeing.`);
-        }
         // Generate personalized recommendations
         const recommendations = [];
         // Mood-based recommendations
         if (progress.moodData.data.length > 0) {
-            const recentMood = progress.moodData.data[progress.moodData.data.length - 1];
-            if (recentMood < 3) {
-                recommendations.push("Try a guided meditation to lift your spirits");
-                recommendations.push("Take a short walk outside to refresh your mind");
-                recommendations.push("Practice deep breathing exercises for 5 minutes");
+            const validMoodData = progress.moodData.data.filter((value) => value > 0);
+            if (validMoodData.length > 0) {
+                const recentMood = validMoodData[validMoodData.length - 1];
+                if (recentMood < 3) {
+                    recommendations.push("Try a guided meditation to lift your spirits");
+                    recommendations.push("Take a short walk outside to refresh your mind");
+                    recommendations.push("Practice deep breathing exercises for 5 minutes");
+                }
             }
         }
         // Activity-based recommendations
@@ -60,11 +75,6 @@ router.get('/analysis', auth_1.protect, async (req, res) => {
             recommendations.push("Add a quick meditation session to your routine");
             recommendations.push("Try a 10-minute stretching exercise");
             recommendations.push("Write down three things you're grateful for today");
-        }
-        // Streak-based recommendations
-        if (progress.streak > 0) {
-            recommendations.push("Maintain your streak by planning tomorrow's activities");
-            recommendations.push("Reflect on what's been working well for you");
         }
         res.json({
             overallScore,

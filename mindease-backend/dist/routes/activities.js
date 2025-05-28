@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const auth_1 = require("../middleware/auth");
+const moods_1 = require("./moods");
 const router = express_1.default.Router();
 // Mock activities data store (replace with database in production)
 let activities = [];
@@ -96,6 +97,16 @@ router.delete('/:id', auth_1.protect, async (req, res) => {
             return res.status(404).json({ success: false, error: 'Activity not found' });
         }
         activities.splice(activityIndex, 1);
+        // Update progress data after deletion
+        if (moods_1.userProgress[userId]) {
+            moods_1.userProgress[userId].activitiesCompleted = Math.max(0, moods_1.userProgress[userId].activitiesCompleted - 1);
+            // Update today's activity count in the chart data
+            const today = new Date().getDay();
+            const dayIndex = today === 0 ? 6 : today - 1;
+            if (moods_1.userProgress[userId].activityData.data[dayIndex] > 0) {
+                moods_1.userProgress[userId].activityData.data[dayIndex] -= 1;
+            }
+        }
         res.json({ success: true, message: 'Activity deleted' });
     }
     catch (error) {

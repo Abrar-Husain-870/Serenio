@@ -22,7 +22,7 @@ const initializePassport = () => {
     passport_1.default.use(new passport_google_oauth20_1.Strategy({
         clientID: googleClientId,
         clientSecret: googleClientSecret,
-        callbackURL: 'http://localhost:3001/api/auth/google/callback',
+        callbackURL: 'https://mindease-backend-84xe.onrender.com/api/auth/google/callback',
         scope: ['profile', 'email']
     }, async (accessToken, refreshToken, profile, done) => {
         try {
