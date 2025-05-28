@@ -55,9 +55,10 @@ const Home: React.FC = () => {
           Your all-in-one companion for mental wellness, self-reflection, and growth.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link to="/signup" className="btn btn-primary px-8 py-3 text-lg font-semibold shadow-md">Get Started</Link>
-          {!isAuthenticated && (
-            <Link to="/login" className="btn btn-secondary px-8 py-3 text-lg font-semibold">Sign In</Link>
+          {!isAuthenticated ? (
+            <Link to="/login" className="btn btn-primary px-8 py-3 text-lg font-semibold shadow-md">Sign In</Link>
+          ) : (
+            <Link to="/dashboard" className="btn btn-primary px-8 py-3 text-lg font-semibold shadow-md">Get Started</Link>
           )}
         </div>
       </section>
