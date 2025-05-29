@@ -3,6 +3,7 @@ import { FiBell, FiLock, FiUser, FiMoon, FiSun } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { useAppSelector } from '../store/hooks';
 import axiosInstance from '../utils/api';
+import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
   const { user, token } = useAppSelector(state => state.auth);
@@ -14,6 +15,7 @@ const Settings = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [toggleLoading, setToggleLoading] = useState<{[key:string]:boolean}>({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -54,35 +56,9 @@ const Settings = () => {
         const newDarkMode = document.documentElement.classList.contains('dark');
         setSettings(prev => ({ ...prev, darkMode: newDarkMode }));
         localStorage.setItem('darkMode', String(newDarkMode));
-        
-        const headers: any = {};
-        if (token && token !== 'cookie') {
-          headers.Authorization = `Bearer ${token}`;
-        }
-        await axiosInstance.post('/api/settings', {
-          darkMode: newDarkMode
-        }, {
-          headers,
-          withCredentials: true
-        });
-        
-        toast.success(`Dark mode ${newDarkMode ? 'enabled' : 'disabled'}!`);
       } else {
         const newValue = !settings[setting];
         setSettings(prev => ({ ...prev, [setting]: newValue }));
-        
-        const headers: any = {};
-        if (token && token !== 'cookie') {
-          headers.Authorization = `Bearer ${token}`;
-        }
-        await axiosInstance.post('/api/settings', {
-          [setting]: newValue
-        }, {
-          headers,
-          withCredentials: true
-        });
-        
-        toast.success('Settings updated!');
       }
     } catch (error) {
       console.error('Error updating settings:', error);
@@ -103,24 +79,18 @@ const Settings = () => {
     try {
       const newTime = e.target.value;
       setSettings(prev => ({ ...prev, reminderTime: newTime }));
-      
-      const headers: any = {};
-      if (token && token !== 'cookie') {
-        headers.Authorization = `Bearer ${token}`;
-      }
-      await axiosInstance.post('/api/settings', {
-        reminderTime: newTime
-      }, {
-        headers,
-        withCredentials: true
-      });
-      
-      toast.success('Reminder time updated!');
     } catch (error) {
       console.error('Error updating reminder time:', error);
       toast.error('Failed to update reminder time');
       // Revert the change if the API call fails
       setSettings(prev => ({ ...prev, reminderTime: prev.reminderTime }));
+    }
+  };
+
+  const handleLogout = () => {
+    if (window.confirm('Do you really want to log out?')) {
+      localStorage.removeItem('token');
+      navigate('/login');
     }
   };
 
@@ -245,19 +215,11 @@ const Settings = () => {
       <div className="card">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Account</h2>
         <div className="space-y-4">
-          <button className="flex items-center w-full p-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
-            <FiUser className="w-5 h-5 mr-3" />
-            Edit Profile
-          </button>
-          <button className="flex items-center w-full p-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
-            <FiLock className="w-5 h-5 mr-3" />
-            Change Password
-          </button>
           <button 
             className="flex items-center w-full p-3 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
-            onClick={() => toast.info('This feature is not available in demo mode')}
+            onClick={handleLogout}
           >
-            Delete Account
+            Log Out
           </button>
         </div>
       </div>
