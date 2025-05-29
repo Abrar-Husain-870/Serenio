@@ -134,7 +134,7 @@ const Progress = () => {
       setLoading(true);
       
       // Fetch progress stats using axiosInstance
-      const response = await axiosInstance.get('/progress');
+      const response = await axiosInstance.get('/api/progress');
 
       if (response?.data) {
         // Ensure we have valid data for all fields
@@ -188,7 +188,7 @@ const Progress = () => {
     if (!token) return;
     
     try {
-      const response = await axiosInstance.get('/ai/assessment/history');
+      const response = await axiosInstance.get('/api/ai/assessment/history');
       
       if (response?.data?.assessments) {
         setAssessmentHistory(response.data.assessments);

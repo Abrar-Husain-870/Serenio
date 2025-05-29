@@ -69,8 +69,8 @@ const Review: React.FC = () => {
       try {
         setLoading(true);
         const [analysisRes, quoteRes] = await Promise.all([
-          axiosInstance.get('/ai/analysis'),
-          axiosInstance.get('/ai/quotes/positive')
+          axiosInstance.get('/api/ai/analysis'),
+          axiosInstance.get('/api/ai/quotes/positive')
         ]);
         setAnalysis(analysisRes.data);
         setQuote(quoteRes.data.quote);

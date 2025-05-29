@@ -16,7 +16,7 @@ const MoodTracker: React.FC = () => {
   useEffect(() => {
     const fetchMoods = async () => {
       try {
-        const response = await axiosInstance.get('/mood');
+        const response = await axiosInstance.get('/api/mood');
         if (Array.isArray(response.data)) {
           dispatch(setMoods(response.data));
         } else {
@@ -44,7 +44,7 @@ const MoodTracker: React.FC = () => {
     
     try {
       dispatch(addMoodStart());
-      const response = await axiosInstance.post('/mood', { 
+      const response = await axiosInstance.post('/api/mood', { 
         mood, 
         note,
         notes: note,
@@ -58,7 +58,7 @@ const MoodTracker: React.FC = () => {
         toast.success('Mood logged successfully');
         
         // Refresh mood entries
-        const updatedMoods = await axiosInstance.get('/mood');
+        const updatedMoods = await axiosInstance.get('/api/mood');
         if (Array.isArray(updatedMoods.data)) {
           dispatch(setMoods(updatedMoods.data));
         }
@@ -76,12 +76,12 @@ const MoodTracker: React.FC = () => {
   const handleDeleteMood = async (id: string) => {
     try {
       setDeletingId(id);
-      await axiosInstance.delete(`/mood/${id}`);
+      await axiosInstance.delete(`/api/mood/${id}`);
       dispatch(deleteMood(id));
       toast.success('Mood entry deleted');
       
       // Refresh mood entries
-      const updatedMoods = await axiosInstance.get('/mood');
+      const updatedMoods = await axiosInstance.get('/api/mood');
       if (Array.isArray(updatedMoods.data)) {
         dispatch(setMoods(updatedMoods.data));
       }

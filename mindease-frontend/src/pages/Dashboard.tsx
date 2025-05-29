@@ -38,7 +38,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const dashboardResponse = await axiosInstance.get('/dashboard/stats');
+        const dashboardResponse = await axiosInstance.get('/api/dashboard/stats');
         setStats(dashboardResponse.data);
         // Get journal entries count - use redux store entries if available
         if (entries && Array.isArray(entries) && entries.length > 0) {
@@ -47,7 +47,7 @@ const Dashboard: React.FC = () => {
             journalEntries: entries.length
           }));
         } else {
-          const journalResponse = await axiosInstance.get('/journal');
+          const journalResponse = await axiosInstance.get('/api/journal');
           if (Array.isArray(journalResponse.data)) {
             setStats(prevStats => ({
               ...prevStats,
@@ -55,7 +55,7 @@ const Dashboard: React.FC = () => {
             }));
           }
         }
-        const activitiesResponse = await axiosInstance.get('/activities');
+        const activitiesResponse = await axiosInstance.get('/api/activities');
         if (Array.isArray(activitiesResponse.data)) {
           setStats(prevStats => ({
             ...prevStats,
@@ -63,7 +63,7 @@ const Dashboard: React.FC = () => {
             totalActivities: activitiesResponse.data.length || 0
           }));
         }
-        const moodResponse = await axiosInstance.get('/mood');
+        const moodResponse = await axiosInstance.get('/api/mood');
         if (Array.isArray(moodResponse.data)) {
           if (moodResponse.data.length > 0) {
             // Get the most recent mood
@@ -89,7 +89,7 @@ const Dashboard: React.FC = () => {
     // Always fetch the latest journal entries from the backend for accurate count
     const fetchJournalCount = async () => {
       try {
-        const response = await axiosInstance.get('/journal');
+        const response = await axiosInstance.get('/api/journal');
         if (Array.isArray(response.data)) {
           setEntryCount(response.data.length);
         } else {
