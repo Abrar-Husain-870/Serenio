@@ -36,7 +36,8 @@ const SharedJournals: React.FC = () => {
           headers,
           withCredentials: true
         });
-        setEntries(response.data);
+        const data = response.data;
+        setEntries(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Error fetching shared journals:', error);
       } finally {

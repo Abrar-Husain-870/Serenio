@@ -59,7 +59,7 @@ const Settings = () => {
         if (token && token !== 'cookie') {
           headers.Authorization = `Bearer ${token}`;
         }
-        await axiosInstance.post('/api/settings/update', {
+        await axiosInstance.post('/api/settings', {
           darkMode: newDarkMode
         }, {
           headers,
@@ -75,7 +75,7 @@ const Settings = () => {
         if (token && token !== 'cookie') {
           headers.Authorization = `Bearer ${token}`;
         }
-        await axiosInstance.post('/api/settings/update', {
+        await axiosInstance.post('/api/settings', {
           [setting]: newValue
         }, {
           headers,
@@ -108,7 +108,7 @@ const Settings = () => {
       if (token && token !== 'cookie') {
         headers.Authorization = `Bearer ${token}`;
       }
-      await axiosInstance.post('/api/settings/update', {
+      await axiosInstance.post('/api/settings', {
         reminderTime: newTime
       }, {
         headers,
