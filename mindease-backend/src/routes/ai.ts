@@ -1,18 +1,20 @@
 import express from 'express';
 import { protect } from '../middleware/auth';
 import { userProgress } from './moods';
+import AssessmentHistory from '../models/AssessmentHistory';
 
 const router = express.Router();
-
-// Store assessment history in memory (replace with database in production)
-let assessmentHistory: Record<string, any[]> = {};
 
 // Get assessment history
 router.get('/assessment/history', protect, async (req, res) => {
   try {
     const userId = (req as any).user.id;
-    const userHistory = assessmentHistory[userId] || [];
-    res.json({ assessments: userHistory });
+    let history = await AssessmentHistory.findOne({ user: userId });
+    if (!history) {
+      history = new AssessmentHistory({ user: userId, assessments: [] });
+      await history.save();
+    }
+    res.json({ assessments: history.assessments });
   } catch (error) {
     console.error('Error fetching assessment history:', error);
     res.status(500).json({ success: false, error: 'Server error' });
@@ -73,18 +75,21 @@ router.post('/assessment/generate', protect, async (req, res) => {
 
     const assessment = {
       id: Date.now().toString(),
-      date: new Date().toISOString(),
+      date: new Date(),
       score: averageScore.toFixed(1),
       scoreLevel,
       analysis,
       recommendations
     };
 
-    // Store in history
-    if (!assessmentHistory[userId]) {
-      assessmentHistory[userId] = [];
+    // Save to MongoDB
+    let history = await AssessmentHistory.findOne({ user: userId });
+    if (!history) {
+      history = new AssessmentHistory({ user: userId, assessments: [assessment] });
+    } else {
+      history.assessments.unshift(assessment); // Add to the beginning
     }
-    assessmentHistory[userId].push(assessment);
+    await history.save();
 
     res.json(assessment);
   } catch (error) {
