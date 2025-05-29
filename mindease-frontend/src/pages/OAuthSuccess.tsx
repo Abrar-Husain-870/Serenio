@@ -3,45 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../store/hooks';
 import { loginSuccess } from '../store/slices/authSlice';
 import { toast } from 'react-toastify';
-import axiosInstance from '../utils/api';
 
 const OAuthSuccess: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const handleOAuthSuccess = async () => {
-      try {
-        console.log('OAuthSuccess: Fetching user data...');
-        // Get user data from the verify-token endpoint
-        const response = await axiosInstance.get('/api/auth/verify-token');
-        console.log('OAuthSuccess: Received response:', response.data);
-
-        if (!response.data) {
-          throw new Error('Failed to get user data');
-        }
-
-        // Update Redux store with user data
-        console.log('OAuthSuccess: Updating Redux store...');
-        dispatch(loginSuccess({
-          user: response.data,
-          token: 'cookie' // We don't need to store the token since it's in a cookie
-        }));
-
-        // Show success message
-        toast.success('Successfully logged in with Google!');
-
-        // Redirect to dashboard
-        console.log('OAuthSuccess: Redirecting to dashboard...');
-        navigate('/dashboard', { replace: true });
-      } catch (error) {
-        console.error('Error handling OAuth success:', error);
-        toast.error('Failed to complete Google login');
-        navigate('/login', { replace: true });
-      }
-    };
-
-    handleOAuthSuccess();
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      localStorage.setItem('token', token);
+      dispatch(loginSuccess({ user: { id: '', name: '', email: '' }, token }));
+      toast.success('Successfully logged in with Google!');
+      navigate('/dashboard', { replace: true });
+    } else {
+      toast.error('Failed to complete Google login');
+      navigate('/login', { replace: true });
+    }
   }, [dispatch, navigate]);
 
   return (
