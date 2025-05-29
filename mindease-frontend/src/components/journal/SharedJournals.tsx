@@ -32,7 +32,7 @@ const SharedJournals: React.FC = () => {
         if (token && token !== 'cookie') {
           headers.Authorization = `Bearer ${token}`;
         }
-        const response = await axios.get('/api/journal/community', {
+        const response = await axios.get('/api/journal/shared', {
           headers,
           withCredentials: true
         });

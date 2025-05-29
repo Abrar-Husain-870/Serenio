@@ -202,7 +202,14 @@ const DailyChallenges = () => {
   useEffect(() => {
     const checkChallengeStatus = async () => {
       try {
-        const response = await axiosInstance.get('/progress');
+        const headers: any = {};
+        if (token && token !== 'cookie') {
+          headers.Authorization = `Bearer ${token}`;
+        }
+        const response = await axiosInstance.get('/api/progress', {
+          headers,
+          withCredentials: true
+        });
         const today = new Date().toISOString().split('T')[0];
         const completedChallenges = response.data.completedChallenges || [];
         setIsCompleted(completedChallenges.includes(today));
@@ -219,9 +226,16 @@ const DailyChallenges = () => {
   const handleComplete = async () => {
     try {
       setIsCompleted(true);
-      await axiosInstance.post('/progress/update', {
+      const headers: any = {};
+      if (token && token !== 'cookie') {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      await axiosInstance.post('/api/progress/update', {
         activityCompleted: true,
         challengeCompleted: true
+      }, {
+        headers,
+        withCredentials: true
       });
 
       toast.success('Challenge completed!', {

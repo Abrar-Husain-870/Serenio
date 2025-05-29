@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { FiBell, FiLock, FiUser, FiMoon, FiSun } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { useAppSelector } from '../store/hooks';
+import axiosInstance from '../utils/api';
 
 const Settings = () => {
-  const { user } = useAppSelector(state => state.auth);
+  const { user, token } = useAppSelector(state => state.auth);
   const [settings, setSettings] = useState({
     darkMode: document.documentElement.classList.contains('dark'),
     notifications: true,
@@ -14,28 +15,109 @@ const Settings = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-  }, []);
+    const fetchSettings = async () => {
+      try {
+        setIsLoading(true);
+        const headers: any = {};
+        if (token && token !== 'cookie') {
+          headers.Authorization = `Bearer ${token}`;
+        }
+        const response = await axiosInstance.get('/api/settings', {
+          headers,
+          withCredentials: true
+        });
+        if (response.data) {
+          setSettings(prev => ({
+            ...prev,
+            ...response.data,
+            darkMode: document.documentElement.classList.contains('dark')
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handleToggle = (setting: keyof typeof settings) => {
-    if (setting === 'darkMode') {
-      document.documentElement.classList.toggle('dark');
-      const newDarkMode = document.documentElement.classList.contains('dark');
-      setSettings(prev => ({ ...prev, darkMode: newDarkMode }));
-      localStorage.setItem('darkMode', String(newDarkMode));
-      toast.success(`Dark mode ${newDarkMode ? 'enabled' : 'disabled'}!`);
-    } else {
-      setSettings((prev) => ({ ...prev, [setting]: !prev[setting] }));
-      toast.success('Settings updated!');
+    if (token) {
+      fetchSettings();
+    }
+  }, [token]);
+
+  const handleToggle = async (setting: keyof typeof settings) => {
+    try {
+      if (setting === 'darkMode') {
+        document.documentElement.classList.toggle('dark');
+        const newDarkMode = document.documentElement.classList.contains('dark');
+        setSettings(prev => ({ ...prev, darkMode: newDarkMode }));
+        localStorage.setItem('darkMode', String(newDarkMode));
+        
+        const headers: any = {};
+        if (token && token !== 'cookie') {
+          headers.Authorization = `Bearer ${token}`;
+        }
+        await axiosInstance.post('/api/settings/update', {
+          darkMode: newDarkMode
+        }, {
+          headers,
+          withCredentials: true
+        });
+        
+        toast.success(`Dark mode ${newDarkMode ? 'enabled' : 'disabled'}!`);
+      } else {
+        const newValue = !settings[setting];
+        setSettings(prev => ({ ...prev, [setting]: newValue }));
+        
+        const headers: any = {};
+        if (token && token !== 'cookie') {
+          headers.Authorization = `Bearer ${token}`;
+        }
+        await axiosInstance.post('/api/settings/update', {
+          [setting]: newValue
+        }, {
+          headers,
+          withCredentials: true
+        });
+        
+        toast.success('Settings updated!');
+      }
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      toast.error('Failed to update settings');
+      // Revert the change if the API call fails
+      if (setting === 'darkMode') {
+        document.documentElement.classList.toggle('dark');
+        setSettings(prev => ({ ...prev, darkMode: !prev.darkMode }));
+      } else {
+        setSettings(prev => ({ ...prev, [setting]: !prev[setting] }));
+      }
     }
   };
 
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSettings((prev) => ({ ...prev, reminderTime: e.target.value }));
-    toast.success('Reminder time updated!');
+  const handleTimeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const newTime = e.target.value;
+      setSettings(prev => ({ ...prev, reminderTime: newTime }));
+      
+      const headers: any = {};
+      if (token && token !== 'cookie') {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      await axiosInstance.post('/api/settings/update', {
+        reminderTime: newTime
+      }, {
+        headers,
+        withCredentials: true
+      });
+      
+      toast.success('Reminder time updated!');
+    } catch (error) {
+      console.error('Error updating reminder time:', error);
+      toast.error('Failed to update reminder time');
+      // Revert the change if the API call fails
+      setSettings(prev => ({ ...prev, reminderTime: prev.reminderTime }));
+    }
   };
 
   if (isLoading) {
