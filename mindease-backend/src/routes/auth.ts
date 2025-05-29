@@ -134,17 +134,8 @@ router.get('/google/callback',
         { expiresIn: '30d' }
       );
       
-      // Set the token in a secure HTTP-only cookie
-      res.cookie('auth_token', token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-      });
-      
-      console.log('Redirecting to OAuth success page');
-      // Redirect to OAuth success page instead of directly to dashboard
-      res.redirect('https://mind-ease-olive.vercel.app/oauth-success');
+      // Redirect to OAuth success page with token in URL
+      res.redirect(`https://mind-ease-olive.vercel.app/oauth-success?token=${token}`);
     } catch (error) {
       console.error('Error in Google callback:', error);
       res.redirect('https://mind-ease-olive.vercel.app/login?error=server_error');
