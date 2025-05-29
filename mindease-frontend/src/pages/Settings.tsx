@@ -13,6 +13,7 @@ const Settings = () => {
     reminderTime: '09:00',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [toggleLoading, setToggleLoading] = useState<{[key:string]:boolean}>({});
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -46,6 +47,7 @@ const Settings = () => {
   }, [token]);
 
   const handleToggle = async (setting: keyof typeof settings) => {
+    setToggleLoading(prev => ({ ...prev, [setting]: true }));
     try {
       if (setting === 'darkMode') {
         document.documentElement.classList.toggle('dark');
@@ -92,6 +94,8 @@ const Settings = () => {
       } else {
         setSettings(prev => ({ ...prev, [setting]: !prev[setting] }));
       }
+    } finally {
+      setToggleLoading(prev => ({ ...prev, [setting]: false }));
     }
   };
 
@@ -166,6 +170,7 @@ const Settings = () => {
               className={`relative inline-flex h-6 w-11 items-center rounded-full ${
                 settings.darkMode ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
               }`}
+              disabled={toggleLoading['darkMode']}
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
@@ -191,6 +196,7 @@ const Settings = () => {
               className={`relative inline-flex h-6 w-11 items-center rounded-full ${
                 settings.notifications ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
               }`}
+              disabled={toggleLoading['notifications']}
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
@@ -210,6 +216,7 @@ const Settings = () => {
               className={`relative inline-flex h-6 w-11 items-center rounded-full ${
                 settings.emailNotifications ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
               }`}
+              disabled={toggleLoading['emailNotifications']}
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
