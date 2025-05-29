@@ -6,6 +6,7 @@ import Grid from '@mui/material/GridLegacy';
 import { useSelector } from 'react-redux';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
+import axiosInstance from '../../utils/api';
 
 interface SharedJournalEntry {
   _id: string;
@@ -36,7 +37,7 @@ const SharedJournals: React.FC<SharedJournalsProps> = ({ refreshFlag }) => {
         if (token && token !== 'cookie') {
           headers.Authorization = `Bearer ${token}`;
         }
-        const response = await axios.get('/api/journal/shared', {
+        const response = await axiosInstance.get('/api/journal/shared', {
           headers,
           withCredentials: true
         });
