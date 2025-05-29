@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../utils/api';
 import { format } from 'date-fns';
 import { 
   Box, 
@@ -30,7 +30,7 @@ const JournalList: React.FC<JournalListProps> = ({ entries = [], refreshFlag }) 
       if (token && token !== 'cookie') {
         headers.Authorization = `Bearer ${token}`;
       }
-      const response = await axios.get('/api/journal', {
+      const response = await axiosInstance.get('/api/journal', {
         headers,
         withCredentials: true
       });
@@ -48,7 +48,7 @@ const JournalList: React.FC<JournalListProps> = ({ entries = [], refreshFlag }) 
       if (token && token !== 'cookie') {
         headers.Authorization = `Bearer ${token}`;
       }
-      await axios.delete(`/api/journal/${id}`, {
+      await axiosInstance.delete(`/api/journal/${id}`, {
         headers,
         withCredentials: true
       });

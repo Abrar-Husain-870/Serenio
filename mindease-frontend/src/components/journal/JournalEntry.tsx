@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TextField, Button, FormControlLabel, Switch, Box, Typography } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { addEntryStart, addEntrySuccess, addEntryFailure } from '../../store/slices/journalSlice';
-import axios from 'axios';
+import axiosInstance from '../../utils/api';
 
 interface JournalEntryProps {
   onEntryCreated?: () => void;
@@ -27,7 +27,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ onEntryCreated }) => {
       if (token && token !== 'cookie') {
         headers.Authorization = `Bearer ${token}`;
       }
-      const response = await axios.post('/api/journal', {
+      const response = await axiosInstance.post('/api/journal', {
         title: content.slice(0, 30) || 'Untitled',
         content,
         mood,
@@ -36,12 +36,16 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ onEntryCreated }) => {
         headers,
         withCredentials: true
       });
-      dispatch(addEntrySuccess(response.data));
-      setContent('');
-      setMood('');
-      setIsShared(false);
-      if (onEntryCreated) {
-        onEntryCreated();
+      if (response.data) {
+        dispatch(addEntrySuccess(response.data));
+        setContent('');
+        setMood('');
+        setIsShared(false);
+        if (onEntryCreated) {
+          onEntryCreated();
+        }
+      } else {
+        throw new Error('Invalid response from server');
       }
     } catch (error: any) {
       console.error('Error creating journal entry:', error);
