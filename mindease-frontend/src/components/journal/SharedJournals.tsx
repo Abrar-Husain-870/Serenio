@@ -19,7 +19,11 @@ interface SharedJournalEntry {
   };
 }
 
-const SharedJournals: React.FC = () => {
+interface SharedJournalsProps {
+  refreshFlag?: number;
+}
+
+const SharedJournals: React.FC<SharedJournalsProps> = ({ refreshFlag }) => {
   const [entries, setEntries] = useState<SharedJournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const token = useSelector((state: any) => state.auth.token);
@@ -46,7 +50,7 @@ const SharedJournals: React.FC = () => {
     };
 
     fetchSharedJournals();
-  }, [token]);
+  }, [token, refreshFlag]);
 
   const getMoodColor = (mood: string) => {
     const moodColors: { [key: string]: string } = {

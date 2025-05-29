@@ -35,7 +35,7 @@ const Journal: React.FC = () => {
           <JournalList refreshFlag={refreshFlag} />
         </>
       ) : (
-        <SharedJournals />
+        <SharedJournals refreshFlag={refreshFlag} />
       )}
     </Container>
   );
