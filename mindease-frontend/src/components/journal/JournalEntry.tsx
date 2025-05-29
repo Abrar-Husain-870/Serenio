@@ -27,6 +27,12 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ onEntryCreated }) => {
       if (token && token !== 'cookie') {
         headers.Authorization = `Bearer ${token}`;
       }
+      console.log({
+        title: content.slice(0, 30) || 'Untitled',
+        content,
+        mood,
+        isShared
+      });
       const response = await axiosInstance.post('/api/journal', {
         title: content.slice(0, 30) || 'Untitled',
         content,
