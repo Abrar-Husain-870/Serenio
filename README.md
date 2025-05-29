@@ -131,8 +131,8 @@ VITE_GOOGLE_CLIENT_ID=your_google_client_id
 ```
 
 ## 📱 Application Access
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:3001
+- Frontend: https://mind-ease-olive.vercel.app/
+- Backend API: https://mindease-backend-84xe.onrender.com
 
 ## 🤝 Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
