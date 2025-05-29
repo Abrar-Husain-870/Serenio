@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -6,6 +6,9 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import Layout from './components/Layout';
 import Chatbot from './components/Chatbot';
+import { useAppDispatch, useAppSelector } from './store/hooks';
+import { loginSuccess } from './store/slices/authSlice';
+import axiosInstance from './utils/api';
 
 // Pages
 import Login from './pages/Login';
@@ -45,6 +48,24 @@ const AuthRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const AppContent: React.FC = () => {
+  const dispatch = useAppDispatch();
+  const { user, token } = useAppSelector(state => state.auth);
+
+  useEffect(() => {
+    // Restore user info if token exists but user is missing
+    if (token && !user) {
+      axiosInstance.get('/api/auth/me')
+        .then(response => {
+          if (response.data) {
+            dispatch(loginSuccess({ user: response.data, token }));
+          }
+        })
+        .catch(() => {
+          // Optionally handle error (e.g., token expired)
+        });
+    }
+  }, [token, user, dispatch]);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />

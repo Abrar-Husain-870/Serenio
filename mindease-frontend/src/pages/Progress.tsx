@@ -238,7 +238,6 @@ const Progress = () => {
       
       if (response?.data) {
         setAssessmentResult(response.data);
-        // Update assessment history
         fetchAssessmentHistory();
         setShowAssessment(false);
       } else {
@@ -246,7 +245,14 @@ const Progress = () => {
       }
     } catch (error: any) {
       console.error('Error generating assessment:', error);
-      const errorMessage = error.response?.data?.error || error.message || 'Failed to generate mental health assessment';
+      let errorMessage = 'Failed to generate mental health assessment.';
+      if (error.response?.status === 404) {
+        errorMessage = 'Assessment feature is currently unavailable. Please contact support or try again later.';
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
       toast.error(errorMessage);
       setAssessmentResult(null);
     } finally {
@@ -496,16 +502,33 @@ const Progress = () => {
                   <span className="font-medium">{assessmentResult.score}/5</span>
                 </div>
               </div>
-              
               <p className="mb-4 text-white/90">{assessmentResult.analysis}</p>
-              
-              <h4 className="font-medium mb-2">Recommendations:</h4>
+              <h4 className="font-medium mb-2">Suggested Activities:</h4>
               <ul className="list-disc pl-5 mb-4 text-white/90">
-                {assessmentResult.recommendations.map((rec: string, index: number) => (
+                {(assessmentResult.recommendations && assessmentResult.recommendations.length > 0
+                  ? assessmentResult.recommendations
+                  : (assessmentResult.score <= 2
+                      ? [
+                          'Try a guided meditation session',
+                          'Go for a short walk outdoors',
+                          'Write down three things you are grateful for'
+                        ]
+                      : assessmentResult.score <= 4
+                        ? [
+                            'Practice deep breathing exercises',
+                            'Connect with a friend or family member',
+                            'Take a mindful break during your day'
+                          ]
+                        : [
+                            'Keep up your positive habits!',
+                            'Share your good mood with someone',
+                            'Try a new activity for fun'
+                          ]
+                  )
+                ).map((rec: string, index: number) => (
                   <li key={index}>{rec}</li>
                 ))}
               </ul>
-              
               <div className="flex justify-between">
                 <button
                   onClick={() => setAssessmentResult(null)}
