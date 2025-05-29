@@ -232,7 +232,7 @@ const Progress = () => {
     setAssessmentLoading(true);
     
     try {
-      const response = await axiosInstance.post('/ai/assessment/generate', {
+      const response = await axiosInstance.post('/api/ai/assessment/generate', {
         answers: assessmentAnswers
       });
       
