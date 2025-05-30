@@ -16,7 +16,6 @@ ollama pull mistral
 ```
 
 ### Setup Steps
-
 1. Install dependencies:
 ```bash
 npm install

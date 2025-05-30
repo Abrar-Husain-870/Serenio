@@ -1,15 +1,11 @@
-import { ChatOllama } from '@langchain/community/chat_models/ollama';
+import { HfInference } from '@huggingface/inference';
 import { getRelevantDocuments } from './embeddings';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Initialize the chat model with Mistral 7B
-const chatModel = new ChatOllama({
-  baseUrl: 'http://localhost:11434', // Default Ollama URL
-  model: 'llama3',
-  temperature: 0.7,
-});
+// Initialize HuggingFace client
+const hf = new HfInference(process.env.HUGGINGFACE_API_KEY || '');
 
 // Store conversation state
 const conversationState: Record<string, any> = {};
@@ -69,11 +65,21 @@ User query: ${query}
 
 Please provide a helpful response based on the conversation state and context.`;
 
-    // Get response from the chat model
-    const response = await chatModel.predict(prompt);
+    // Get response from HuggingFace
+    const response = await hf.textGeneration({
+      model: 'gpt2',
+      inputs: prompt,
+      parameters: {
+        max_new_tokens: 150,
+        temperature: 0.7,
+        top_p: 0.95,
+      }
+    });
 
     // Update conversation state based on response
-    if (response.includes('ADD_ACTIVITY:') || response.includes('ADD_MOOD:') || response.includes('ADD_JOURNAL:')) {
+    if (response.generated_text.includes('ADD_ACTIVITY:') || 
+        response.generated_text.includes('ADD_MOOD:') || 
+        response.generated_text.includes('ADD_JOURNAL:')) {
       conversationState[userId] = {
         currentAction: null,
         collectedData: {}
@@ -81,7 +87,7 @@ Please provide a helpful response based on the conversation state and context.`;
     }
 
     return {
-      response: response.trim()
+      response: response.generated_text.replace(prompt, '').trim()
     };
   } catch (error) {
     console.error('Error in RAG chatbot:', error);

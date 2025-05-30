@@ -24,7 +24,11 @@ const api_1 = __importDefault(require("./routes/api"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 // Connect to MongoDB
-mongoose_1.default.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mindease')
+mongoose_1.default.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mindease', {
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+    family: 4
+})
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err));
 // Middleware
@@ -72,6 +76,12 @@ app.get('/', (req, res) => {
     console.log('Root route accessed');
     res.json({ message: 'MindEase API is running' });
 });
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'healthy' });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
