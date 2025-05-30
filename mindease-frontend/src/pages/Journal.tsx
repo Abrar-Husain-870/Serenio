@@ -24,8 +24,32 @@ const Journal: React.FC = () => {
       
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tab label="My Journal" />
-          <Tab label="Community Journals" />
+          <Tab 
+            label="My Journal" 
+            sx={{
+              fontFamily: 'Montserrat, Arial, sans-serif',
+              fontWeight: 700,
+              color: tabValue === 0 ? '#2563eb' : '#64748b',
+              fontSize: '1.1rem',
+              textTransform: 'none',
+              background: tabValue === 0 ? 'linear-gradient(90deg, #6366f1 0%, #60a5fa 100%)' : 'none',
+              borderRadius: '1rem 1rem 0 0',
+              transition: 'all 0.2s',
+            }}
+          />
+          <Tab 
+            label="Community Journals" 
+            sx={{
+              fontFamily: 'Montserrat, Arial, sans-serif',
+              fontWeight: 700,
+              color: tabValue === 1 ? '#2563eb' : '#64748b',
+              fontSize: '1.1rem',
+              textTransform: 'none',
+              background: tabValue === 1 ? 'linear-gradient(90deg, #6366f1 0%, #60a5fa 100%)' : 'none',
+              borderRadius: '1rem 1rem 0 0',
+              transition: 'all 0.2s',
+            }}
+          />
         </Tabs>
       </Box>
 
