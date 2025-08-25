@@ -21,6 +21,9 @@ dotenv.config();
 
 const app = express();
 
+// Trust reverse proxy (needed on Render/Heroku to get correct HTTPS protocol)
+app.set('trust proxy', 1);
+
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mindease')
   .then(() => console.log('Connected to MongoDB'))
