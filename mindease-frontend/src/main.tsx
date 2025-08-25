@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { store } from './store';
 import App from './App';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Check for user preference and set dark mode on page load
 const initializeDarkMode = () => {
@@ -27,7 +28,9 @@ initializeDarkMode();
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Provider store={store}>
-      <App />
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
     </Provider>
   </React.StrictMode>
 );

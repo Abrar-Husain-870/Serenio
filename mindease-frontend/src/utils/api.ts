@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const RAW_API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// Normalize: strip trailing '/api' and trailing slash to ensure '/auth/*' works
+const API_BASE_URL = RAW_API_BASE_URL.replace(/\/?api\/?$/i, '').replace(/\/$/, '');
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
@@ -60,7 +62,7 @@ export const fetchWithAuth = async (endpoint: string, options: RequestInit = {})
     'Content-Type': 'application/json',
     ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     ...(options.headers || {})
-  };
+  } as Record<string, string>;
   
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {

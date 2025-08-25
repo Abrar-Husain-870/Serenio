@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { format } from 'date-fns';
 import { Card, CardContent, Typography, Box, Avatar, Chip } from '@mui/material';
-import Grid from '@mui/material/GridLegacy';
+import Grid from '@mui/material/Grid';
 import { useSelector } from 'react-redux';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
@@ -72,7 +71,7 @@ const SharedJournals: React.FC<SharedJournalsProps> = ({ refreshFlag }) => {
       if (token && token !== 'cookie') {
         headers.Authorization = `Bearer ${token}`;
       }
-      await axios.delete(`/journal/${id}`, { headers, withCredentials: true });
+      await axiosInstance.delete(`/journal/${id}`, { headers, withCredentials: true });
       setEntries(entries.filter(entry => entry._id !== id));
     } catch (error) {
       alert('Failed to delete entry.');

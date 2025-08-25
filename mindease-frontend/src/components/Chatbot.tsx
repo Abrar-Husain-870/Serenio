@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/index';
-import { FaRegCommentDots } from 'react-icons/fa';
+import { FaRegCommentDots, FaBrain, FaCalendarAlt, FaExclamationTriangle, FaChartLine } from 'react-icons/fa';
 import { API_BASE_URL } from '../utils/api';
 
 const Chatbot: React.FC = () => {
@@ -55,6 +55,88 @@ const Chatbot: React.FC = () => {
     }
   };
 
+  const triggerIcsDownload = (icsContent: string) => {
+    try {
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+      a.download = `MindEase-Wellness-Plan-${timestamp}.ics`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Failed to download ICS file', e);
+    }
+  };
+
+  // New AI feature handlers
+  const handleAIFeature = async (feature: string, endpoint: string, data?: any) => {
+    setIsLoading(true);
+    
+    try {
+      if (!token) {
+        throw new Error('Please log in to use this feature');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/ai/${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token === 'cookie' ? '' : `Bearer ${token}`
+        },
+        credentials: 'include',
+        body: JSON.stringify(data || {})
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to process request');
+      }
+
+      const result = await response.json();
+      
+      // Format the response based on the feature
+      let formattedResponse = '';
+      switch (feature) {
+        case 'mood-summary':
+          formattedResponse = `📊 **AI Mood Summary**\n\n**Daily Summary:** ${result.dailySummary}\n\n**Weekly Trend:** ${result.weeklyTrend}\n\n**Top Triggers:**\n${result.topTriggers.map((t: string) => `• ${t}`).join('\n')}\n\n**Next Steps:**\n${result.nextSteps.map((s: string) => `• ${s}`).join('\n')}`;
+          break;
+        case 'cbt-thought-record':
+          formattedResponse = `🧠 **CBT Thought Record**\n\n**Situation:** ${result.situation}\n**Automatic Thought:** ${result.automaticThought}\n**Emotion:** ${result.emotion}\n**Cognitive Distortion:** ${result.cognitiveDistortion}\n**Evidence:** ${result.evidence}\n**Balanced Alternative:** ${result.balancedAlternative}`;
+          break;
+        case 'wellness-plan':
+          formattedResponse = `📅 **7-Day Wellness Plan**\n\n${(result.plan || []).map((day: any) => `**${day.day}:** ${day.title}\n${day.description}\n⏱️ ${day.timeEstimate} | 💡 ${day.whyItHelps}\n🎯 ${day.prompt}\n`).join('\n')}\n\n📱 *A calendar file is being prepared...*`;
+          // Auto-download ICS calendar if present
+          if (result.icsCalendar && typeof result.icsCalendar === 'string' && result.icsCalendar.trim().startsWith('BEGIN:VCALENDAR')) {
+            triggerIcsDownload(result.icsCalendar);
+            formattedResponse += `\n\n✅ Calendar file downloaded. Import it into Google/Outlook/Apple Calendar.`;
+          } else {
+            formattedResponse += `\n\nℹ️ Calendar data not available. You can regenerate the plan to try again.`;
+          }
+          break;
+        case 'relapse-signals':
+          const riskColor = result.riskLevel === 'high' ? '🔴' : result.riskLevel === 'medium' ? '🟡' : '🟢';
+          formattedResponse = `${riskColor} **Relapse Risk Assessment: ${result.riskLevel.toUpperCase()}**\n\n**Signals Detected:**\n${result.signals.map((s: string) => `• ${s}`).join('\n')}\n\n**Proactive Coping Tasks:**\n${result.copingTasks.map((t: string) => `• ${t}`).join('\n')}\n\n**Check-in Schedule:**\n${result.checkInSchedule.map((c: string) => `• ${c}`).join('\n')}`;
+          break;
+        default:
+          formattedResponse = JSON.stringify(result, null, 2);
+      }
+
+      setChatHistory(prev => [...prev, { text: formattedResponse, isUser: false }]);
+    } catch (error) {
+      console.error(`Error with ${feature}:`, error);
+      setChatHistory(prev => [...prev, { 
+        text: error instanceof Error ? error.message : 'Failed to process this feature. Please try again.', 
+        isUser: false 
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!isAuthenticated) return null;
 
   return (
@@ -69,6 +151,44 @@ const Chatbot: React.FC = () => {
             >
               ×
             </button>
+          </div>
+          
+          {/* AI Feature Quick Access Buttons */}
+          <div className="p-3 border-b border-gray-700 bg-gray-800">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => handleAIFeature('mood-summary', 'mood-summary')}
+                disabled={isLoading}
+                className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white text-xs px-3 py-2 rounded-lg transition-colors"
+              >
+                <FaChartLine />
+                <span>Mood Summary</span>
+              </button>
+              <button
+                onClick={() => handleAIFeature('cbt-thought-record', 'cbt-thought-record', { negativeThought: 'I need help with a negative thought' })}
+                disabled={isLoading}
+                className="flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white text-xs px-3 py-2 rounded-lg transition-colors"
+              >
+                <FaBrain />
+                <span>CBT Helper</span>
+              </button>
+              <button
+                onClick={() => handleAIFeature('wellness-plan', 'create-plan')}
+                disabled={isLoading}
+                className="flex items-center justify-center space-x-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white text-xs px-3 py-2 rounded-lg transition-colors"
+              >
+                <FaCalendarAlt />
+                <span>Wellness Plan</span>
+              </button>
+              <button
+                onClick={() => handleAIFeature('relapse-signals', 'relapse-signals')}
+                disabled={isLoading}
+                className="flex items-center justify-center space-x-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 text-white text-xs px-3 py-2 rounded-lg transition-colors"
+              >
+                <FaExclamationTriangle />
+                <span>Risk Check</span>
+              </button>
+            </div>
           </div>
           
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900">

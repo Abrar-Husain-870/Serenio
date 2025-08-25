@@ -5,6 +5,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.processChatbotQueryWithGemini = processChatbotQueryWithGemini;
 exports.getPositiveQuote = getPositiveQuote;
+exports.generateMoodSummary = generateMoodSummary;
+exports.generateCBTThoughtRecord = generateCBTThoughtRecord;
+exports.generateWellnessPlan = generateWellnessPlan;
+exports.detectRelapseSignals = detectRelapseSignals;
 const generative_ai_1 = require("@google/generative-ai");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -103,5 +107,201 @@ async function getPositiveQuote() {
             "Today is your day to shine."
         ];
         return fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)];
+    }
+}
+async function generateMoodSummary(moodData, journalData) {
+    try {
+        const prompt = `Analyze this mental health data and provide a concise, actionable summary:
+
+Mood Data: ${JSON.stringify(moodData)}
+Journal Data: ${JSON.stringify(journalData)}
+
+Provide a structured response with:
+1. Daily Summary (2-3 sentences)
+2. Weekly Trend (2-3 sentences) 
+3. Top 3 Triggers (bullet points)
+4. 3 Next Steps (actionable, specific)
+
+Format as JSON: {"dailySummary": "...", "weeklyTrend": "...", "topTriggers": ["...", "...", "..."], "nextSteps": ["...", "...", "..."]}`;
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const generatedText = response.text().trim();
+        // Try to parse JSON response
+        try {
+            const parsed = JSON.parse(generatedText);
+            return {
+                dailySummary: parsed.dailySummary || "Unable to generate summary",
+                weeklyTrend: parsed.weeklyTrend || "Unable to analyze trends",
+                topTriggers: parsed.topTriggers || ["Data insufficient"],
+                nextSteps: parsed.nextSteps || ["Continue current routine"],
+                success: true
+            };
+        }
+        catch (parseError) {
+            // Fallback if JSON parsing fails
+            return {
+                dailySummary: "Your mood data shows patterns worth exploring",
+                weeklyTrend: "Continue tracking to identify trends",
+                topTriggers: ["Keep observing triggers"],
+                nextSteps: ["Maintain current routine", "Continue journaling", "Stay consistent"],
+                success: true
+            };
+        }
+    }
+    catch (error) {
+        console.error('Error generating mood summary:', error);
+        return {
+            dailySummary: "Unable to generate summary at this time",
+            weeklyTrend: "Data analysis temporarily unavailable",
+            topTriggers: ["Continue tracking"],
+            nextSteps: ["Maintain current routine"],
+            success: false
+        };
+    }
+}
+async function generateCBTThoughtRecord(negativeThought) {
+    try {
+        const prompt = `Create a CBT thought record for this negative thought: "${negativeThought}"
+
+Analyze and provide:
+1. Situation (what happened)
+2. Automatic Thought (the negative thought)
+3. Emotion (0-100 intensity + emotion name)
+4. Cognitive Distortion (identify the distortion type)
+5. Evidence (for and against the thought)
+6. Balanced Alternative (more realistic thought)
+
+Format as JSON: {"situation": "...", "automaticThought": "...", "emotion": "...", "cognitiveDistortion": "...", "evidence": "...", "balancedAlternative": "..."}`;
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const generatedText = response.text().trim();
+        try {
+            const parsed = JSON.parse(generatedText);
+            return {
+                situation: parsed.situation || "Situation unclear",
+                automaticThought: parsed.automaticThought || negativeThought,
+                emotion: parsed.emotion || "Emotion to be determined",
+                cognitiveDistortion: parsed.cognitiveDistortion || "Pattern to identify",
+                evidence: parsed.evidence || "Evidence to gather",
+                balancedAlternative: parsed.balancedAlternative || "Alternative perspective to develop",
+                success: true
+            };
+        }
+        catch (parseError) {
+            return {
+                situation: "Reflect on what triggered this thought",
+                automaticThought: negativeThought,
+                emotion: "Rate your emotion intensity 0-100",
+                cognitiveDistortion: "Identify thinking patterns",
+                evidence: "Look for evidence for and against",
+                balancedAlternative: "Develop a more balanced view",
+                success: true
+            };
+        }
+    }
+    catch (error) {
+        console.error('Error generating CBT thought record:', error);
+        return {
+            situation: "Unable to analyze at this time",
+            automaticThought: negativeThought,
+            emotion: "Emotion analysis unavailable",
+            cognitiveDistortion: "Pattern identification needed",
+            evidence: "Evidence gathering required",
+            balancedAlternative: "Alternative development needed",
+            success: false
+        };
+    }
+}
+async function generateWellnessPlan(moodData, journalData) {
+    try {
+        const prompt = `Create a personalized 7-day wellness plan based on this data:
+
+Mood Data: ${JSON.stringify(moodData)}
+Journal Data: ${JSON.stringify(journalData)}
+
+Generate a plan with:
+- 1-2 activities per day
+- Each activity includes: title, description, time estimate, why it helps, and a prompt
+- Also generate an ICS calendar format for all activities
+
+Format as JSON: {"plan": [{"day": "Day 1", "title": "...", "description": "...", "timeEstimate": "...", "whyItHelps": "...", "prompt": "..."}], "icsCalendar": "BEGIN:VCALENDAR..."}`;
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const generatedText = response.text().trim();
+        try {
+            const parsed = JSON.parse(generatedText);
+            return {
+                plan: parsed.plan || [],
+                icsCalendar: parsed.icsCalendar || "",
+                success: true
+            };
+        }
+        catch (parseError) {
+            return {
+                plan: [],
+                icsCalendar: "",
+                success: true
+            };
+        }
+    }
+    catch (error) {
+        console.error('Error generating wellness plan:', error);
+        return {
+            plan: [],
+            icsCalendar: "",
+            success: false
+        };
+    }
+}
+async function detectRelapseSignals(moodData, journalData) {
+    try {
+        const prompt = `Analyze this mental health data for relapse signals and risk indicators:
+
+Mood Data: ${JSON.stringify(moodData)}
+Journal Data: ${JSON.stringify(journalData)}
+
+Provide:
+1. Risk Level (low/medium/high)
+2. 3-5 specific signals detected with brief evidence
+3. 5 proactive coping tasks (90-second starters)
+4. Check-in schedule for next 72 hours
+
+Format as JSON: {"riskLevel": "low/medium/high", "signals": ["...", "..."], "copingTasks": ["...", "..."], "checkInSchedule": ["...", "..."]}`;
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const generatedText = response.text().trim();
+        try {
+            const parsed = JSON.parse(generatedText);
+            return {
+                riskLevel: parsed.riskLevel || 'low',
+                signals: parsed.signals || ["Continue monitoring"],
+                copingTasks: parsed.copingTasks || ["Practice deep breathing"],
+                checkInSchedule: parsed.checkInSchedule || ["Check in daily"],
+                success: true
+            };
+        }
+        catch (parseError) {
+            return {
+                riskLevel: 'low',
+                signals: ["Continue monitoring patterns"],
+                copingTasks: ["Practice deep breathing", "Take a short walk", "Call a friend"],
+                checkInSchedule: ["Check in daily", "Monitor mood changes"],
+                success: true
+            };
+        }
+    }
+    catch (error) {
+        console.error('Error detecting relapse signals:', error);
+        return {
+            riskLevel: 'low',
+            signals: ["Analysis temporarily unavailable"],
+            copingTasks: ["Continue current routine"],
+            checkInSchedule: ["Maintain regular check-ins"],
+            success: false
+        };
     }
 }

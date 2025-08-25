@@ -7,6 +7,9 @@ const express_1 = __importDefault(require("express"));
 const auth_1 = require("../middleware/auth");
 const moods_1 = require("./moods");
 const AssessmentHistory_1 = __importDefault(require("../models/AssessmentHistory"));
+const geminiService_1 = require("../utils/geminiService");
+const Mood_1 = __importDefault(require("../models/Mood"));
+const journal_1 = __importDefault(require("../models/journal"));
 const router = express_1.default.Router();
 // Get assessment history
 router.get('/assessment/history', auth_1.protect, async (req, res) => {
@@ -184,6 +187,79 @@ router.get('/analysis', auth_1.protect, (req, res) => {
     catch (error) {
         console.error('Error generating analysis:', error);
         res.status(500).json({ error: 'Failed to generate analysis' });
+    }
+});
+// New AI-powered endpoints
+// Generate AI mood summary
+router.post('/mood-summary', auth_1.protect, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        // Get recent mood and journal data (last 7 days)
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const [moodData, journalData] = await Promise.all([
+            Mood_1.default.find({ user: userId, date: { $gte: sevenDaysAgo } }).sort({ date: -1 }),
+            journal_1.default.find({ user: userId, createdAt: { $gte: sevenDaysAgo } }).sort({ createdAt: -1 })
+        ]);
+        const summary = await (0, geminiService_1.generateMoodSummary)(moodData, journalData);
+        res.json(summary);
+    }
+    catch (error) {
+        console.error('Error generating mood summary:', error);
+        res.status(500).json({ error: 'Failed to generate mood summary' });
+    }
+});
+// Generate CBT thought record
+router.post('/cbt-thought-record', auth_1.protect, async (req, res) => {
+    try {
+        const { negativeThought } = req.body;
+        if (!negativeThought) {
+            return res.status(400).json({ error: 'Negative thought is required' });
+        }
+        const thoughtRecord = await (0, geminiService_1.generateCBTThoughtRecord)(negativeThought);
+        res.json(thoughtRecord);
+    }
+    catch (error) {
+        console.error('Error generating CBT thought record:', error);
+        res.status(500).json({ error: 'Failed to generate CBT thought record' });
+    }
+});
+// Generate wellness plan
+router.post('/create-plan', auth_1.protect, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        // Get recent mood and journal data (last 14 days for better planning)
+        const fourteenDaysAgo = new Date();
+        fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+        const [moodData, journalData] = await Promise.all([
+            Mood_1.default.find({ user: userId, date: { $gte: fourteenDaysAgo } }).sort({ date: -1 }),
+            journal_1.default.find({ user: userId, createdAt: { $gte: fourteenDaysAgo } }).sort({ createdAt: -1 })
+        ]);
+        const plan = await (0, geminiService_1.generateWellnessPlan)(moodData, journalData);
+        res.json(plan);
+    }
+    catch (error) {
+        console.error('Error generating wellness plan:', error);
+        res.status(500).json({ error: 'Failed to generate wellness plan' });
+    }
+});
+// Detect relapse signals
+router.post('/relapse-signals', auth_1.protect, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        // Get recent mood and journal data (last 10 days for pattern analysis)
+        const tenDaysAgo = new Date();
+        tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+        const [moodData, journalData] = await Promise.all([
+            Mood_1.default.find({ user: userId, date: { $gte: tenDaysAgo } }).sort({ date: -1 }),
+            journal_1.default.find({ user: userId, createdAt: { $gte: tenDaysAgo } }).sort({ createdAt: -1 })
+        ]);
+        const signals = await (0, geminiService_1.detectRelapseSignals)(moodData, journalData);
+        res.json(signals);
+    }
+    catch (error) {
+        console.error('Error detecting relapse signals:', error);
+        res.status(500).json({ error: 'Failed to detect relapse signals' });
     }
 });
 exports.default = router;

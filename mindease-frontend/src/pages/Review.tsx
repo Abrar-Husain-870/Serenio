@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FiTrendingUp, FiCheckCircle, FiActivity, FiHeart, FiSmile } from 'react-icons/fi';
-import { axiosInstance } from '../utils/axios';
+import axiosInstance from '../utils/api';
 import { toast } from 'react-toastify';
 import { useAppSelector } from '../store/hooks';
 

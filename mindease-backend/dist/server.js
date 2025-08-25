@@ -61,6 +61,8 @@ app.use(passport_1.default.session());
 (0, passport_2.default)();
 // Routes - Order matters! More specific routes first
 app.use('/auth', auth_1.default);
+// Alias to support clients calling /api/auth/*
+// app.use('/api/auth', authRoutes);
 app.use('/dashboard', dashboard_1.default);
 app.use('/journal', journal_1.default);
 app.use('/mood', moods_1.default);
@@ -70,6 +72,11 @@ app.use('/review', review_1.default);
 app.use('/ai', ai_1.default);
 // Mount apiRoutes at a different path to avoid conflicts
 app.use('/v1', api_1.default);
+// Explicit redirect in case some upstream strips segments and alias mounting is bypassed
+// app.get('/api/auth/*', (req, res) => {
+//   const target = req.originalUrl.replace(/^\/api\/auth/, '/auth');
+//   return res.redirect(302, target);
+// });
 // Temporary route to fix chatbot endpoint issue
 app.use('/chatbot', api_1.default);
 // Debug: Log all registered routes

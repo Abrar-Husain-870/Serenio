@@ -2,6 +2,14 @@ import express from 'express';
 import { protect } from '../middleware/auth';
 import { userProgress } from './moods';
 import AssessmentHistory from '../models/AssessmentHistory';
+import { 
+  generateMoodSummary, 
+  generateCBTThoughtRecord, 
+  generateWellnessPlan, 
+  detectRelapseSignals 
+} from '../utils/geminiService';
+import Mood from '../models/Mood';
+import Journal from '../models/journal';
 
 const router = express.Router();
 
@@ -196,6 +204,91 @@ router.get('/analysis', protect, (req, res) => {
   } catch (error) {
     console.error('Error generating analysis:', error);
     res.status(500).json({ error: 'Failed to generate analysis' });
+  }
+});
+
+// New AI-powered endpoints
+
+// Generate AI mood summary
+router.post('/mood-summary', protect, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    
+    // Get recent mood and journal data (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const [moodData, journalData] = await Promise.all([
+      Mood.find({ user: userId, date: { $gte: sevenDaysAgo } }).sort({ date: -1 }),
+      Journal.find({ user: userId, createdAt: { $gte: sevenDaysAgo } }).sort({ createdAt: -1 })
+    ]);
+    
+    const summary = await generateMoodSummary(moodData, journalData);
+    res.json(summary);
+  } catch (error) {
+    console.error('Error generating mood summary:', error);
+    res.status(500).json({ error: 'Failed to generate mood summary' });
+  }
+});
+
+// Generate CBT thought record
+router.post('/cbt-thought-record', protect, async (req, res) => {
+  try {
+    const { negativeThought } = req.body;
+    
+    if (!negativeThought) {
+      return res.status(400).json({ error: 'Negative thought is required' });
+    }
+    
+    const thoughtRecord = await generateCBTThoughtRecord(negativeThought);
+    res.json(thoughtRecord);
+  } catch (error) {
+    console.error('Error generating CBT thought record:', error);
+    res.status(500).json({ error: 'Failed to generate CBT thought record' });
+  }
+});
+
+// Generate wellness plan
+router.post('/create-plan', protect, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    
+    // Get recent mood and journal data (last 14 days for better planning)
+    const fourteenDaysAgo = new Date();
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+    
+    const [moodData, journalData] = await Promise.all([
+      Mood.find({ user: userId, date: { $gte: fourteenDaysAgo } }).sort({ date: -1 }),
+      Journal.find({ user: userId, createdAt: { $gte: fourteenDaysAgo } }).sort({ createdAt: -1 })
+    ]);
+    
+    const plan = await generateWellnessPlan(moodData, journalData);
+    res.json(plan);
+  } catch (error) {
+    console.error('Error generating wellness plan:', error);
+    res.status(500).json({ error: 'Failed to generate wellness plan' });
+  }
+});
+
+// Detect relapse signals
+router.post('/relapse-signals', protect, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    
+    // Get recent mood and journal data (last 10 days for pattern analysis)
+    const tenDaysAgo = new Date();
+    tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+    
+    const [moodData, journalData] = await Promise.all([
+      Mood.find({ user: userId, date: { $gte: tenDaysAgo } }).sort({ date: -1 }),
+      Journal.find({ user: userId, createdAt: { $gte: tenDaysAgo } }).sort({ createdAt: -1 })
+    ]);
+    
+    const signals = await detectRelapseSignals(moodData, journalData);
+    res.json(signals);
+  } catch (error) {
+    console.error('Error detecting relapse signals:', error);
+    res.status(500).json({ error: 'Failed to detect relapse signals' });
   }
 });
 
