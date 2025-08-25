@@ -30,7 +30,7 @@ const JournalList: React.FC<JournalListProps> = ({ entries = [], refreshFlag }) 
       if (token && token !== 'cookie') {
         headers.Authorization = `Bearer ${token}`;
       }
-      const response = await axiosInstance.get('/api/journal', {
+      const response = await axiosInstance.get('/journal', {
         headers,
         withCredentials: true
       });
@@ -48,7 +48,7 @@ const JournalList: React.FC<JournalListProps> = ({ entries = [], refreshFlag }) 
       if (token && token !== 'cookie') {
         headers.Authorization = `Bearer ${token}`;
       }
-      await axiosInstance.delete(`/api/journal/${id}`, {
+      await axiosInstance.delete(`/journal/${id}`, {
         headers,
         withCredentials: true
       });

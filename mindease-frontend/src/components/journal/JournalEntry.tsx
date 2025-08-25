@@ -33,7 +33,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ onEntryCreated }) => {
         mood,
         isShared
       });
-      const response = await axiosInstance.post('/api/journal', {
+      const response = await axiosInstance.post('/journal', {
         title: content.slice(0, 30) || 'Untitled',
         content,
         mood,

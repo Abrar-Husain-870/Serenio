@@ -101,6 +101,22 @@ router.post('/login', async (req, res) => {
 // Google OAuth
 router.get('/google', (req, res, next) => {
   console.log('Initiating Google OAuth login');
+  console.log('Request URL:', req.url);
+  console.log('Request path:', req.path);
+  console.log('Request originalUrl:', req.originalUrl);
+  console.log('Request headers:', req.headers);
+  console.log('Request method:', req.method);
+  
+  // Test if we can access this route directly
+  if (req.query.test === 'true') {
+    return res.json({ 
+      message: 'Google OAuth route is accessible',
+      url: req.url,
+      path: req.path,
+      originalUrl: req.originalUrl
+    });
+  }
+  
   passport.authenticate('google', { 
     scope: ['profile', 'email'],
     prompt: 'select_account'
@@ -112,7 +128,7 @@ router.get('/google/callback',
   (req, res, next) => {
     console.log('Received Google OAuth callback');
     passport.authenticate('google', { 
-      failureRedirect: 'https://mind-ease-olive.vercel.app/login?error=authentication_failed',
+      failureRedirect: `${process.env.FRONTEND_URL}/login?error=authentication_failed`,
       session: true // Enable session
     })(req, res, next);
   },
@@ -123,7 +139,7 @@ router.get('/google/callback',
       
       if (!user || !user.id) {
         console.error('Failed to get user ID from user object:', user);
-        return res.redirect('https://mind-ease-olive.vercel.app/login?error=authentication_failed');
+        return res.redirect(`${process.env.FRONTEND_URL}/login?error=authentication_failed`);
       }
       
       console.log('Generating JWT token for user:', user.id);
@@ -135,10 +151,10 @@ router.get('/google/callback',
       );
       
       // Redirect to OAuth success page with token in URL
-      res.redirect(`https://mind-ease-olive.vercel.app/oauth-success?token=${token}`);
+      res.redirect(`${process.env.FRONTEND_URL}/oauth-success?token=${token}`);
     } catch (error) {
       console.error('Error in Google callback:', error);
-      res.redirect('https://mind-ease-olive.vercel.app/login?error=server_error');
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=server_error`);
     }
   }
 );

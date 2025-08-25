@@ -54,7 +54,7 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     // Restore user info if token exists but user is missing
     if (token && !user) {
-      axiosInstance.get('/api/auth/me')
+              axiosInstance.get('/auth/me')
         .then(response => {
           if (response.data) {
             dispatch(loginSuccess({ user: response.data, token }));

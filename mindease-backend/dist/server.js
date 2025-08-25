@@ -24,11 +24,7 @@ const api_1 = __importDefault(require("./routes/api"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 // Connect to MongoDB
-mongoose_1.default.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mindease', {
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-    family: 4
-})
+mongoose_1.default.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mindease')
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err));
 // Middleware
@@ -61,27 +57,66 @@ app.use((0, express_session_1.default)({
 app.use(passport_1.default.initialize());
 app.use(passport_1.default.session());
 (0, passport_2.default)();
-// Routes
-app.use('/api/auth', auth_1.default);
-app.use('/api/dashboard', dashboard_1.default);
-app.use('/api/journal', journal_1.default);
-app.use('/api/mood', moods_1.default);
-app.use('/api/activities', activities_1.default);
-app.use('/api/progress', progress_1.default);
-app.use('/api/review', review_1.default);
-app.use('/api/ai', ai_1.default);
-app.use('/api', api_1.default);
+// Routes - Order matters! More specific routes first
+app.use('/auth', auth_1.default);
+app.use('/dashboard', dashboard_1.default);
+app.use('/journal', journal_1.default);
+app.use('/mood', moods_1.default);
+app.use('/activities', activities_1.default);
+app.use('/progress', progress_1.default);
+app.use('/review', review_1.default);
+app.use('/ai', ai_1.default);
+// Mount apiRoutes at a different path to avoid conflicts
+app.use('/v1', api_1.default);
+// Temporary route to fix chatbot endpoint issue
+app.use('/chatbot', api_1.default);
+// Debug: Log all registered routes
+console.log('Registered routes:');
+app._router.stack.forEach((middleware) => {
+    if (middleware.route) {
+        console.log(`${Object.keys(middleware.route.methods)} ${middleware.route.path}`);
+    }
+    else if (middleware.name === 'router') {
+        console.log(`Router mounted at: ${middleware.regexp}`);
+    }
+});
 // Root route handler
 app.get('/', (req, res) => {
     console.log('Root route accessed');
     res.json({ message: 'MindEase API is running' });
 });
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'healthy' });
+// Test route to verify routing is working
+app.get('/test', (req, res) => {
+    console.log('Test route accessed');
+    res.json({ message: 'Test route working', timestamp: new Date().toISOString() });
 });
-
+// Debug route to see what's happening
+app.get('/debug', (req, res) => {
+    res.json({
+        message: 'Debug route',
+        url: req.url,
+        path: req.path,
+        originalUrl: req.originalUrl,
+        headers: req.headers,
+        method: req.method
+    });
+});
+// Catch-all route for debugging
+app.use('*', (req, res) => {
+    console.log('Catch-all route hit:');
+    console.log('URL:', req.url);
+    console.log('Path:', req.path);
+    console.log('Original URL:', req.originalUrl);
+    console.log('Method:', req.method);
+    console.log('Headers:', req.headers);
+    res.status(404).json({
+        error: 'Route not found',
+        url: req.url,
+        path: req.path,
+        originalUrl: req.originalUrl,
+        method: req.method
+    });
+});
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);

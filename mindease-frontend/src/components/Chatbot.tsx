@@ -27,7 +27,7 @@ const Chatbot: React.FC = () => {
         throw new Error('Please log in to use the chatbot');
       }
 
-      const response = await fetch(`${API_BASE_URL}/chatbot/query`, {
+      const response = await fetch(`${API_BASE_URL}/v1/chatbot/query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

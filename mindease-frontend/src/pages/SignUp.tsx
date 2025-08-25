@@ -22,7 +22,7 @@ const SignUp: React.FC = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+             const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,7 +61,9 @@ const SignUp: React.FC = () => {
     // Clear any existing tokens before redirecting to Google OAuth
     localStorage.removeItem('token');
     localStorage.removeItem('isGoogleLogin');
-    window.location.href = `${API_BASE_URL}/api/auth/google`;
+    // Use the full backend URL directly for OAuth
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    window.location.href = `${backendUrl}/auth/google`;
   };
   
   const handleFacebookLogin = () => {

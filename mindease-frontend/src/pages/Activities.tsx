@@ -70,7 +70,7 @@ const Activities: React.FC = () => {
       if (!token) return;
       try {
         setLoading(true);
-        const response = await axiosInstance.get('/api/activities');
+        const response = await axiosInstance.get('/activities');
         if (Array.isArray(response.data)) {
           dispatch(setActivities(response.data));
           if (response.data.filter((activity: any) => !activity.completed).length === 0 && 
@@ -114,7 +114,7 @@ const Activities: React.FC = () => {
     
     try {
       setLoading(true);
-      const response = await axiosInstance.post('/api/activities', {
+      const response = await axiosInstance.post('/activities', {
         title,
         description,
         type,
@@ -149,7 +149,7 @@ const Activities: React.FC = () => {
     
     try {
       setLoading(true);
-      const response = await axiosInstance.put(`/api/activities/${id}/toggle`);
+      const response = await axiosInstance.put(`/activities/${id}/toggle`);
       
       if (response.data) {
         dispatch(toggleActivity(id));
@@ -183,7 +183,7 @@ const Activities: React.FC = () => {
 
     try {
       setLoading(true);
-      const response = await axiosInstance.delete(`/api/activities/${id}`);
+      const response = await axiosInstance.delete(`/activities/${id}`);
       
       if (response.status === 200) {
         dispatch(deleteActivity(id));

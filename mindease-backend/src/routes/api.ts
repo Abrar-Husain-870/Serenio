@@ -1,11 +1,8 @@
 import express from 'express';
 import { 
-  generatePositiveQuote, 
-  generateMentalHealthReview, 
-  processChatbotQuery,
-  generateMentalHealthAssessment
-} from '../utils/huggingfaceService';
-import { processChatbotQueryWithRAG } from '../rag/chatbot';
+  processChatbotQueryWithGemini,
+  getPositiveQuote
+} from '../utils/geminiService';
 import { protect } from '../middleware/auth';
 
 const router = express.Router();
@@ -14,31 +11,21 @@ const router = express.Router();
 router.get('/quotes/positive', async (req, res) => {
   try {
     // Force generation of a new quote each time
-    const quote = await generatePositiveQuote();
+    const quote = await getPositiveQuote();
     
     // Add cache control headers to prevent browser caching
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     
-    res.json(quote);
+    res.json({ quote });
   } catch (error) {
     console.error('Error getting positive quote:', error);
     res.status(500).json({ error: 'Failed to generate quote' });
   }
 });
 
-// Generate AI review of mental health
-router.post('/review/generate', protect, async (req, res) => {
-  try {
-    const userData = req.body;
-    const review = await generateMentalHealthReview(userData);
-    res.json(review);
-  } catch (error) {
-    console.error('Error generating review:', error);
-    res.status(500).json({ error: 'Failed to generate review' });
-  }
-});
+
 
 // Process chatbot query
 router.post('/chatbot/query', protect, async (req, res) => {
@@ -47,44 +34,23 @@ router.post('/chatbot/query', protect, async (req, res) => {
     const userId = req.user?.id;
     
     if (!userId) {
-      return res.status(401).json({ error: 'User not authenticated' });
+      return res.status(400).json({ error: 'User not authenticated' });
     }
     
     if (!query) {
       return res.status(400).json({ error: 'Query is required' });
     }
     
-    // Try RAG-enhanced chatbot first
-    try {
-      const response = await processChatbotQueryWithRAG(query, userId);
-      return res.json(response);
-    } catch (ragError) {
-      console.error('RAG chatbot error, falling back to basic chatbot:', ragError);
-      // Fallback to basic chatbot if RAG fails
-      const response = await processChatbotQuery(query);
-      return res.json(response);
-    }
+    // Use Gemini chatbot
+    const response = await processChatbotQueryWithGemini(query, userId);
+    return res.json(response);
   } catch (error) {
     console.error('Error processing chatbot query:', error);
     res.status(500).json({ error: 'Failed to process query' });
   }
 });
 
-// Generate mental health assessment
-router.post('/assessment/generate', protect, async (req, res) => {
-  try {
-    const { answers } = req.body;
-    if (!answers || typeof answers !== 'object') {
-      return res.status(400).json({ error: 'Valid answers object is required' });
-    }
-    
-    const assessment = await generateMentalHealthAssessment(answers);
-    res.json(assessment);
-  } catch (error) {
-    console.error('Error generating assessment:', error);
-    res.status(500).json({ error: 'Failed to generate assessment' });
-  }
-});
+
 
 // Get user's mental health history
 router.get('/assessment/history', protect, (req, res) => {

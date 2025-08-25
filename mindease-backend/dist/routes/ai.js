@@ -6,15 +6,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const auth_1 = require("../middleware/auth");
 const moods_1 = require("./moods");
+const AssessmentHistory_1 = __importDefault(require("../models/AssessmentHistory"));
 const router = express_1.default.Router();
-// Store assessment history in memory (replace with database in production)
-let assessmentHistory = {};
 // Get assessment history
 router.get('/assessment/history', auth_1.protect, async (req, res) => {
     try {
         const userId = req.user.id;
-        const userHistory = assessmentHistory[userId] || [];
-        res.json({ assessments: userHistory });
+        let history = await AssessmentHistory_1.default.findOne({ user: userId });
+        if (!history) {
+            history = new AssessmentHistory_1.default({ user: userId, assessments: [] });
+            await history.save();
+        }
+        res.json({ assessments: history.assessments });
     }
     catch (error) {
         console.error('Error fetching assessment history:', error);
@@ -72,17 +75,21 @@ router.post('/assessment/generate', auth_1.protect, async (req, res) => {
         }
         const assessment = {
             id: Date.now().toString(),
-            date: new Date().toISOString(),
+            date: new Date(),
             score: averageScore.toFixed(1),
             scoreLevel,
             analysis,
             recommendations
         };
-        // Store in history
-        if (!assessmentHistory[userId]) {
-            assessmentHistory[userId] = [];
+        // Save to MongoDB
+        let history = await AssessmentHistory_1.default.findOne({ user: userId });
+        if (!history) {
+            history = new AssessmentHistory_1.default({ user: userId, assessments: [assessment] });
         }
-        assessmentHistory[userId].push(assessment);
+        else {
+            history.assessments.unshift(assessment); // Add to the beginning
+        }
+        await history.save();
         res.json(assessment);
     }
     catch (error) {

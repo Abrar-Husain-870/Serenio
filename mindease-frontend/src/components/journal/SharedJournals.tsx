@@ -37,7 +37,7 @@ const SharedJournals: React.FC<SharedJournalsProps> = ({ refreshFlag }) => {
         if (token && token !== 'cookie') {
           headers.Authorization = `Bearer ${token}`;
         }
-        const response = await axiosInstance.get('/api/journal/shared', {
+        const response = await axiosInstance.get('/journal/shared', {
           headers,
           withCredentials: true
         });
@@ -72,7 +72,7 @@ const SharedJournals: React.FC<SharedJournalsProps> = ({ refreshFlag }) => {
       if (token && token !== 'cookie') {
         headers.Authorization = `Bearer ${token}`;
       }
-      await axios.delete(`/api/journal/${id}`, { headers, withCredentials: true });
+      await axios.delete(`/journal/${id}`, { headers, withCredentials: true });
       setEntries(entries.filter(entry => entry._id !== id));
     } catch (error) {
       alert('Failed to delete entry.');

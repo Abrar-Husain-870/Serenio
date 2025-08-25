@@ -29,6 +29,7 @@ router.get('/', auth_1.protect, async (req, res) => {
 });
 // Add a new journal entry
 router.post('/', auth_1.protect, async (req, res) => {
+    console.log('Received journal entry:', req.body);
     try {
         const userId = req.user.id;
         const { title, content, mood, isShared } = req.body;

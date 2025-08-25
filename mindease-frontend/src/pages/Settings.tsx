@@ -25,7 +25,7 @@ const Settings = () => {
         if (token && token !== 'cookie') {
           headers.Authorization = `Bearer ${token}`;
         }
-        const response = await axiosInstance.get('/api/settings', {
+        const response = await axiosInstance.get('/settings', {
           headers,
           withCredentials: true
         });

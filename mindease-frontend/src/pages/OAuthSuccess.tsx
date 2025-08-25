@@ -15,7 +15,7 @@ const OAuthSuccess: React.FC = () => {
     if (token) {
       localStorage.setItem('token', token);
       // Fetch user info with the new token
-      axiosInstance.get('/api/auth/me', {
+      axiosInstance.get('/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(response => {

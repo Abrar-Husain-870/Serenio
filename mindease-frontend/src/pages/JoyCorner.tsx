@@ -206,7 +206,7 @@ const DailyChallenges = () => {
         if (token && token !== 'cookie') {
           headers.Authorization = `Bearer ${token}`;
         }
-        const response = await axiosInstance.get('/api/progress', {
+        const response = await axiosInstance.get('/progress', {
           headers,
           withCredentials: true
         });
@@ -230,7 +230,7 @@ const DailyChallenges = () => {
       if (token && token !== 'cookie') {
         headers.Authorization = `Bearer ${token}`;
       }
-      await axiosInstance.post('/api/progress/update', {
+      await axiosInstance.post('/progress/update', {
         activityCompleted: true,
         challengeCompleted: true
       }, {

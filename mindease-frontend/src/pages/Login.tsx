@@ -4,7 +4,6 @@ import { useAppDispatch } from '../store/hooks';
 import { loginStart, loginSuccess, loginFailure } from '../store/slices/authSlice';
 import { FcGoogle } from 'react-icons/fc';
 import { toast } from 'react-toastify';
-import { API_BASE_URL } from '../utils/api';
 import axiosInstance from '../utils/api';
 import { restoreUserDataAfterLogin } from '../utils/userDataStorage';
 import mindeaseLogo from '../assets/mindease-logo.svg';
@@ -22,7 +21,7 @@ const Login: React.FC = () => {
     dispatch(loginStart());
     
     try {
-      const { data } = await axiosInstance.post('/api/auth/login', {
+      const { data } = await axiosInstance.post('/auth/login', {
         email,
         password
       });
@@ -64,7 +63,9 @@ const Login: React.FC = () => {
   const handleGoogleLogin = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('isGoogleLogin');
-    window.location.href = `${API_BASE_URL}/api/auth/google`;
+    // Use the full backend URL directly for OAuth
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    window.location.href = `${backendUrl}/auth/google`;
   };
 
   return (

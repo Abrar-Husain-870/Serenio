@@ -24,8 +24,7 @@ This guide will help you deploy the MindEase application to production.
    GOOGLE_CLIENT_ID=your_google_client_id
    GOOGLE_CLIENT_SECRET=your_google_client_secret
    FRONTEND_URL=your_frontend_url
-   HUGGINGFACE_API_KEY=your_huggingface_api_key
-   OLLAMA_BASE_URL=your_ollama_url
+   GEMINI_API_KEY=your_gemini_api_key
    ```
 
 4. Deploy the service
@@ -60,10 +59,10 @@ This guide will help you deploy the MindEase application to production.
 
 4. Get your connection string and update the `MONGODB_URI` in your backend environment variables
 
-## Ollama Setup (for AI Chatbot)
+## Gemini API Setup (for AI Chatbot)
 
-1. Set up Ollama on your server or use a cloud service
-2. Update the `OLLAMA_BASE_URL` in your backend environment variables
+1. Get a Gemini API key from Google AI Studio: https://makersuite.google.com/app/apikey
+2. Add the `GEMINI_API_KEY` to your backend environment variables
 
 ## Post-Deployment Checklist
 
@@ -93,8 +92,8 @@ This guide will help you deploy the MindEase application to production.
    - Check IP whitelist settings
 
 4. AI features:
-   - Verify Ollama service is running
-   - Check HuggingFace API key
+   - Verify Gemini API key is valid
+   - Test chatbot functionality
 
 ### Support
 

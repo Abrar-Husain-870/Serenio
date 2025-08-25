@@ -82,6 +82,20 @@ router.post('/login', async (req, res) => {
 // Google OAuth
 router.get('/google', (req, res, next) => {
     console.log('Initiating Google OAuth login');
+    console.log('Request URL:', req.url);
+    console.log('Request path:', req.path);
+    console.log('Request originalUrl:', req.originalUrl);
+    console.log('Request headers:', req.headers);
+    console.log('Request method:', req.method);
+    // Test if we can access this route directly
+    if (req.query.test === 'true') {
+        return res.json({
+            message: 'Google OAuth route is accessible',
+            url: req.url,
+            path: req.path,
+            originalUrl: req.originalUrl
+        });
+    }
     passport_1.default.authenticate('google', {
         scope: ['profile', 'email'],
         prompt: 'select_account'
@@ -91,7 +105,7 @@ router.get('/google', (req, res, next) => {
 router.get('/google/callback', (req, res, next) => {
     console.log('Received Google OAuth callback');
     passport_1.default.authenticate('google', {
-        failureRedirect: 'https://mind-ease-olive.vercel.app/login?error=authentication_failed',
+        failureRedirect: `${process.env.FRONTEND_URL}/login?error=authentication_failed`,
         session: true // Enable session
     })(req, res, next);
 }, async (req, res) => {
@@ -100,25 +114,17 @@ router.get('/google/callback', (req, res, next) => {
         const user = req.user;
         if (!user || !user.id) {
             console.error('Failed to get user ID from user object:', user);
-            return res.redirect('https://mind-ease-olive.vercel.app/login?error=authentication_failed');
+            return res.redirect(`${process.env.FRONTEND_URL}/login?error=authentication_failed`);
         }
         console.log('Generating JWT token for user:', user.id);
         // Generate JWT token
         const token = jsonwebtoken_1.default.sign({ userId: user.id }, process.env.JWT_SECRET || 'your-secret-key', { expiresIn: '30d' });
-        // Set the token in a secure HTTP-only cookie
-        res.cookie('auth_token', token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-        });
-        console.log('Redirecting to OAuth success page');
-        // Redirect to OAuth success page instead of directly to dashboard
-        res.redirect('https://mind-ease-olive.vercel.app/oauth-success');
+        // Redirect to OAuth success page with token in URL
+        res.redirect(`${process.env.FRONTEND_URL}/oauth-success?token=${token}`);
     }
     catch (error) {
         console.error('Error in Google callback:', error);
-        res.redirect('https://mind-ease-olive.vercel.app/login?error=server_error');
+        res.redirect(`${process.env.FRONTEND_URL}/login?error=server_error`);
     }
 });
 // Get current user from token

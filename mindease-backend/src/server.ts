@@ -60,21 +60,71 @@ app.use(passport.initialize());
 app.use(passport.session());
 initializePassport();
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/journal', journalRoutes);
-app.use('/api/mood', moodRoutes);
-app.use('/api/activities', activityRoutes);
-app.use('/api/progress', progressRoutes);
-app.use('/api/review', reviewRoutes);
-app.use('/api/ai', aiRoutes);
-app.use('/api', apiRoutes);
+// Routes - Order matters! More specific routes first
+app.use('/auth', authRoutes);
+app.use('/dashboard', dashboardRoutes);
+app.use('/journal', journalRoutes);
+app.use('/mood', moodRoutes);
+app.use('/activities', activityRoutes);
+app.use('/progress', progressRoutes);
+app.use('/review', reviewRoutes);
+app.use('/ai', aiRoutes);
+// Mount apiRoutes at a different path to avoid conflicts
+app.use('/v1', apiRoutes);
+
+// Temporary route to fix chatbot endpoint issue
+app.use('/chatbot', apiRoutes);
+
+// Debug: Log all registered routes
+console.log('Registered routes:');
+app._router.stack.forEach((middleware: any) => {
+  if (middleware.route) {
+    console.log(`${Object.keys(middleware.route.methods)} ${middleware.route.path}`);
+  } else if (middleware.name === 'router') {
+    console.log(`Router mounted at: ${middleware.regexp}`);
+  }
+});
 
 // Root route handler
 app.get('/', (req, res) => {
   console.log('Root route accessed');
   res.json({ message: 'MindEase API is running' });
+});
+
+// Test route to verify routing is working
+app.get('/test', (req, res) => {
+  console.log('Test route accessed');
+  res.json({ message: 'Test route working', timestamp: new Date().toISOString() });
+});
+
+// Debug route to see what's happening
+app.get('/debug', (req, res) => {
+  res.json({
+    message: 'Debug route',
+    url: req.url,
+    path: req.path,
+    originalUrl: req.originalUrl,
+    headers: req.headers,
+    method: req.method
+  });
+});
+
+// Catch-all route for debugging
+app.use('*', (req, res) => {
+  console.log('Catch-all route hit:');
+  console.log('URL:', req.url);
+  console.log('Path:', req.path);
+  console.log('Original URL:', req.originalUrl);
+  console.log('Method:', req.method);
+  console.log('Headers:', req.headers);
+  
+  res.status(404).json({ 
+    error: 'Route not found',
+    url: req.url,
+    path: req.path,
+    originalUrl: req.originalUrl,
+    method: req.method
+  });
 });
 
 // Error handling middleware
