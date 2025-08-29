@@ -75,78 +75,88 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ onEntryCreated }) => {
         placeholder="How are you feeling today?"
         variant="outlined"
         required
-        InputProps={{
-          style: {
-            fontFamily: 'inherit',
-            color: '#f3f4f6',
-            background: '#22304a',
-            borderRadius: '1rem',
-            boxShadow: '0 2px 8px 0 rgba(0,0,0,0.04)',
-          },
-        }}
         sx={{
           '& .MuiInputBase-root': {
-            backgroundColor: '#22304a',
+            backgroundColor: '#F8FAFC',
             borderRadius: '1rem',
-            color: '#f3f4f6',
+            color: '#0f172a',
             boxShadow: '0 2px 8px 0 rgba(0,0,0,0.04)',
+            fontFamily: 'inherit',
           },
           '& .MuiInputBase-input': {
-            color: '#f3f4f6',
+            color: '#0f172a',
           },
           '& .MuiInputBase-input::placeholder': {
-            color: '#a0aec0',
+            color: '#64748b',
             opacity: 1,
             fontFamily: 'inherit',
           },
           '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#334155',
+            borderColor: '#cbd5e1',
+          },
+          ':where(.dark) & .MuiInputBase-root, .dark & .MuiInputBase-root': {
+            backgroundColor: '#22304a !important',
+            color: '#f3f4f6 !important',
+          },
+          ':where(.dark) & .MuiInputBase-input, .dark & .MuiInputBase-input': {
+            color: '#f3f4f6 !important',
+          },
+          ':where(.dark) & .MuiInputBase-input::placeholder, .dark & .MuiInputBase-input::placeholder': {
+            color: '#a0aec0 !important',
+          },
+          ':where(.dark) & .MuiOutlinedInput-notchedOutline, .dark & .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#334155 !important',
           },
           '&:hover .MuiOutlinedInput-notchedOutline': {
             borderColor: '#60a5fa',
           },
         }}
-        className="text-gray-100"
       />
+
       <TextField
         fullWidth
         value={mood}
         onChange={(e) => setMood(e.target.value)}
         placeholder="Current mood (e.g., happy, sad, anxious)"
         variant="outlined"
-        InputProps={{
-          style: {
-            fontFamily: 'inherit',
-            color: '#f3f4f6',
-            background: '#22304a',
-            borderRadius: '1rem',
-            boxShadow: '0 2px 8px 0 rgba(0,0,0,0.04)',
-          },
-        }}
         sx={{
           '& .MuiInputBase-root': {
-            backgroundColor: '#22304a',
+            backgroundColor: '#F8FAFC',
             borderRadius: '1rem',
-            color: '#f3f4f6',
+            color: '#0f172a',
             boxShadow: '0 2px 8px 0 rgba(0,0,0,0.04)',
+            fontFamily: 'inherit',
           },
           '& .MuiInputBase-input': {
-            color: '#f3f4f6',
+            color: '#0f172a',
           },
           '& .MuiInputBase-input::placeholder': {
-            color: '#a0aec0',
+            color: '#64748b',
             opacity: 1,
             fontFamily: 'inherit',
           },
           '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#cbd5e1',
+          },
+          '.dark & .MuiInputBase-root': {
+            backgroundColor: '#22304a',
+            color: '#f3f4f6',
+          },
+          '.dark & .MuiInputBase-input': {
+            color: '#f3f4f6',
+          },
+          '.dark & .MuiInputBase-input::placeholder': {
+            color: '#a0aec0',
+          },
+          '.dark & .MuiOutlinedInput-notchedOutline': {
             borderColor: '#334155',
           },
           '&:hover .MuiOutlinedInput-notchedOutline': {
             borderColor: '#60a5fa',
           },
         }}
-        className="text-gray-100"
       />
+
       <FormControlLabel
         control={
           <Switch

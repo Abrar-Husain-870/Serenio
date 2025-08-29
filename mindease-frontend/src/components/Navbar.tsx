@@ -22,22 +22,19 @@ const Navbar: React.FC = () => {
   return (
     <Box
       as="nav"
-      bg="white"
-      _dark={{ bg: 'gray.800', borderBottomColor: 'gray.700' }}
-      borderBottomWidth="1px"
-      borderBottomColor="gray.200"
+      className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700"
       w="full"
       shadow="softSm"
       position="sticky"
       top={0}
-      zIndex={10}
+      zIndex={100}
     >
-      <Flex justify="space-between" align="center" h="64px" px={0}>
+      <Flex justify="space-between" align="center" h="64px" px={4}>
         {/* Left: Logo and App Name */}
         <Link to="/" style={{ textDecoration: 'none' }}>
           <Flex align="center" gap={2} ml={0} pl={0}>
             <img src={mindeaseLogo} alt="MindEase Logo" style={{ height: 32, width: 32 }} />
-            <Text fontSize="xl" fontWeight="bold" color="accent.600" _dark={{ color: 'accent.400' }}>
+            <Text fontSize="xl" fontWeight="bold" className="text-accent-600 dark:text-accent-400">
               MindEase
             </Text>
           </Flex>
@@ -54,7 +51,7 @@ const Navbar: React.FC = () => {
                 color={avatarStyle.colorLight}
                 borderWidth="2px"
                 borderColor={avatarStyle.borderColorLight}
-                _dark={{ bg: avatarStyle.bgDark, color: avatarStyle.colorDark, borderColor: avatarStyle.borderColorDark }}
+                className="[&]:bg-[color:var(--fallback-white)] dark:[&]:bg-[color:inherit]"
               >
                 {/* If you later add user.avatarUrl, render Image below */}
                 {/* user?.avatarUrl && (<Avatar.Image src={user.avatarUrl} alt={user.name || 'User'} />) */}
@@ -62,7 +59,9 @@ const Navbar: React.FC = () => {
                   {user?.name?.charAt(0) || 'A'}
                 </Avatar.Fallback>
               </Avatar.Root>
-              <Text color="gray.800" _dark={{ color: 'white' }} fontWeight="semibold">{user?.name || 'Account'}</Text>
+              <Text className="text-gray-800 dark:text-white" fontWeight="semibold">
+                {user?.name || 'Account'}
+              </Text>
               <Button onClick={handleLogout} ml={2} px={3} py={1} rounded="md" bg="red.500" color="white" _hover={{ bg: 'red.600' }}>
                 Logout
               </Button>

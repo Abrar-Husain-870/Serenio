@@ -22,19 +22,33 @@ const Journal: React.FC = () => {
         Journal
       </Heading>
 
-      <Tabs.Root value={tabValue} onValueChange={handleTabChange}>
-        <Tabs.List borderBottomWidth="1px" borderColor="gray.200" mb={3}>
+      <Tabs.Root value={tabValue} onValueChange={handleTabChange} variant="unstyled">
+        <Tabs.List
+          mb={5}
+          px={1}
+          py={1}
+          rounded="xl"
+          className="inline-flex bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+        >
           <Tabs.Trigger
             value="my"
             fontFamily="Montserrat, Arial, sans-serif"
             fontWeight={700}
-            fontSize="1.1rem"
+            fontSize="1rem"
             textTransform="none"
-            borderTopLeftRadius="1rem"
-            borderTopRightRadius="1rem"
+            px={4}
+            py={2}
+            rounded="lg"
+            transition="all 200ms ease"
+            textDecoration="none"
+            borderBottom="none"
+            outline="none"
+            _hover={{ bg: 'gray.200', _dark: { bg: 'gray.700' } }}
             _selected={{
               bg: 'linear-gradient(90deg, #6366f1 0%, #60a5fa 100%)',
-              color: '#2563eb',
+              color: 'white',
+              boxShadow: 'sm',
+              borderBottom: 'none',
             }}
           >
             My Journal
@@ -43,13 +57,21 @@ const Journal: React.FC = () => {
             value="community"
             fontFamily="Montserrat, Arial, sans-serif"
             fontWeight={700}
-            fontSize="1.1rem"
+            fontSize="1rem"
             textTransform="none"
-            borderTopLeftRadius="1rem"
-            borderTopRightRadius="1rem"
+            px={4}
+            py={2}
+            rounded="lg"
+            transition="all 200ms ease"
+            textDecoration="none"
+            borderBottom="none"
+            outline="none"
+            _hover={{ bg: 'gray.200', _dark: { bg: 'gray.700' } }}
             _selected={{
               bg: 'linear-gradient(90deg, #6366f1 0%, #60a5fa 100%)',
-              color: '#2563eb',
+              color: 'white',
+              boxShadow: 'sm',
+              borderBottom: 'none',
             }}
           >
             Community Journals

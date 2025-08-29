@@ -47,10 +47,14 @@ const features = [
 const Home: React.FC = () => {
   const { isAuthenticated } = useAuth();
   return (
-    <Flex minH="100vh" direction="column" align="center" justify="flex-start" px={4} bgGradient="linear(to-br, blue.50, blue.100, blue.200)">
+    <Flex minH="100vh" direction="column" align="center" justify="flex-start" px={4} pt={16} bgGradient="linear(to-br, blue.50, blue.100, blue.200)">
       {/* Hero Section */}
-      <Box w="full" maxW="4xl" mx="auto" textAlign="center" mb={16}>
-        <img src={mindeaseLogo} alt="MindEase Logo" style={{ height: 80, width: 80, marginBottom: 16, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))' }} />
+      <Box w="full" maxW="5xl" mx="auto" textAlign="center" mb={16}>
+        <img
+          src={mindeaseLogo}
+          alt="MindEase Logo"
+          style={{ height: 80, width: 80, display: 'block', margin: '0 auto 16px', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))' }}
+        />
         <Heading as="h1" size="2xl" color="blue.700" mb={2}>
           MindEase
         </Heading>

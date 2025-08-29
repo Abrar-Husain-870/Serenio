@@ -93,13 +93,19 @@ const JournalList: React.FC<JournalListProps> = ({ entries = [], refreshFlag }) 
             <Box
               key={entry.id}
               sx={{
-                background: '#232b39',
+                background: '#ffffff',
                 borderRadius: 3,
                 p: 3,
                 display: 'flex',
                 flexDirection: 'column',
-                boxShadow: '0 2px 12px 0 rgba(0,0,0,0.10)',
+                boxShadow: '0 2px 12px 0 rgba(0,0,0,0.08)',
+                border: '1px solid #e2e8f0',
                 minWidth: 0,
+                '.dark &': {
+                  background: '#232b39',
+                  boxShadow: '0 2px 12px 0 rgba(0,0,0,0.30)',
+                  border: '1px solid transparent',
+                },
               }}
             >
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
@@ -118,14 +124,15 @@ const JournalList: React.FC<JournalListProps> = ({ entries = [], refreshFlag }) 
                   <Typography
                     variant="caption"
                     sx={{
-                      color: '#94a3b8',
+                      color: '#475569',
                       fontSize: '1rem',
                       fontWeight: 400,
                       mr: 0.5,
+                      '.dark &': { color: '#94a3b8' },
                     }}
                   >
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                      <svg style={{ marginRight: 4 }} width="18" height="18" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      <svg style={{ marginRight: 4 }} width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                       {format(new Date(entry.date), 'dd/MM/yyyy')} at {format(new Date(entry.date), 'HH:mm')}
                     </span>
                   </Typography>
@@ -137,12 +144,13 @@ const JournalList: React.FC<JournalListProps> = ({ entries = [], refreshFlag }) 
               <Typography
                 variant="body1"
                 sx={{
-                  color: '#94a3b8',
+                  color: '#334155',
                   fontSize: '1.15rem',
                   fontWeight: 400,
                   mt: 1,
                   mb: 0.5,
                   wordBreak: 'break-word',
+                  '.dark &': { color: '#cbd5e1' },
                 }}
               >
                 {entry.content}
@@ -155,4 +163,4 @@ const JournalList: React.FC<JournalListProps> = ({ entries = [], refreshFlag }) 
   );
 };
 
-export default JournalList; 
+export default JournalList;
