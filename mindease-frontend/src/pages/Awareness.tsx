@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, Fragment } from 'react';
 import { FiInfo, FiBookOpen, FiBriefcase, FiUsers, FiHeart, FiExternalLink } from 'react-icons/fi';
-import { Card } from '@chakra-ui/react';
+import { Card, Accordion, Highlight, Mark, useHighlight } from '@chakra-ui/react';
 
 interface Resource {
   id: string;
@@ -21,7 +21,7 @@ interface MentalHealthCondition {
 
 const Awareness: React.FC = () => {
   // Mental health conditions with information
-  const [conditions, setConditions] = useState<MentalHealthCondition[]>([
+  const [conditions] = useState<MentalHealthCondition[]>([
     {
       id: '1',
       name: 'Anxiety Disorders',
@@ -155,21 +155,31 @@ const Awareness: React.FC = () => {
     }
   ];
 
-  // Toggle expanded state for conditions
-  const toggleExpanded = (id: string) => {
-    setConditions(conditions.map(condition => 
-      condition.id === id 
-        ? { ...condition, expanded: !condition.expanded } 
-        : condition
-    ));
-  };
+  // Using Chakra Accordion's internal state; no manual toggle needed
+  const introText =
+    'Learn about different mental health conditions, their symptoms, and ways to cope. Education is the first step toward understanding and healing. Recognizing the signs early can prevent struggles from becoming overwhelming, and seeking support can make recovery more effective. Never ignore warning signals like thoughts of self-harm or suicide — reaching out for help in those moments can save a life.';
+  const introChunks = useHighlight({ text: introText, query: ['thoughts of self-harm or suicide'] });
 
   return (
     <div className="space-y-8">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Mental Health Awareness</h1>
         <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-          Learn about different mental health conditions, their symptoms, and ways to cope. Education is the first step toward understanding and healing.
+          {introChunks.map((chunk, index) =>
+            chunk.match ? (
+              <Mark key={index} css={{ fontStyle: 'italic', color: 'red.500', position: 'relative' }}>
+                {chunk.text}
+                <img
+                  style={{ position: 'absolute', left: 0 }}
+                  src="https://uploads-ssl.webflow.com/5fac11c3554384e2baf6481c/61c4dc7572d22f05ba26fd34_hero-underline.svg"
+                  loading="lazy"
+                  alt=""
+                />
+              </Mark>
+            ) : (
+              <Fragment key={index}>{chunk.text}</Fragment>
+            )
+          )}
         </p>
       </div>
 
@@ -207,40 +217,121 @@ const Awareness: React.FC = () => {
         <p className="text-gray-600 dark:text-gray-400 mb-6">
           Understanding these conditions can help you identify symptoms in yourself or loved ones and seek appropriate help.
         </p>
-        <div className="space-y-4">
-          {conditions.map(condition => (
-            <div key={condition.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-              <button
-                onClick={() => toggleExpanded(condition.id)}
-                className="w-full flex justify-between items-center p-4 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-              >
-                <span className="font-medium text-gray-900 dark:text-white">{condition.name}</span>
-                <span className={`transform transition-transform ${condition.expanded ? 'rotate-180' : ''}`}>
-                  ▼
-                </span>
-              </button>
-              {condition.expanded && (
-                <div className="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">{condition.description}</p>
-                  
+        <Accordion.Root multiple>
+          {conditions.map((condition) => (
+            <Accordion.Item key={condition.id} value={condition.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden mb-3">
+              <Accordion.ItemTrigger className="flex w-full justify-between items-center p-4 text-left hover:bg-gray-50 dark:hover:bg-gray-800">
+                <span className="flex-1 font-medium text-gray-900 dark:text-white text-left">{condition.name}</span>
+                <Accordion.ItemIndicator />
+              </Accordion.ItemTrigger>
+              <Accordion.ItemContent className="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                <div className="p-4">
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    <Highlight
+                      query={
+                        ({
+                          '1': ['excessive fear or worry', 'daily activities'],
+                          '2': ['persistent feeling of sadness', 'loss of interest'],
+                          '3': ['intense, disturbing thoughts and feelings', 'long after the traumatic event'],
+                          '4': ['unusual shifts in mood', 'energy', 'activity levels', 'concentration']
+                        } as Record<string, string[]>) [condition.id] || []
+                      }
+                      styles={{ px: '1', py: '0.5', rounded: 'md', bg: 'yellow.100', color: 'gray.900', _dark: { bg: 'yellow.300', color: 'black' } }}
+                    >
+                      {condition.description}
+                    </Highlight>
+                  </p>
                   <h3 className="font-medium text-gray-900 dark:text-white mb-2">Common Symptoms:</h3>
                   <ul className="list-disc pl-5 mb-4 text-gray-600 dark:text-gray-400">
-                    {condition.symptoms.map((symptom, index) => (
-                      <li key={index}>{symptom}</li>
-                    ))}
+                    {condition.symptoms.map((symptom, index) => {
+                      // Red: danger words. Blue: lifestyle/concentration/energy terms. No orange in symptoms per spec.
+                      const redKeys = ['Thoughts of death or suicide', 'Severe emotional distress'];
+                      const blueKeys = [
+                        'Difficulty concentrating',
+                        'Sleep problems',
+                        'Changes in sleep patterns',
+                        'reduced need for sleep',
+                        'increased energy',
+                        'racing thoughts'
+                      ];
+
+                      const isRed = redKeys.some(k => symptom.includes(k));
+                      const isBlue = blueKeys.some(k => symptom.includes(k));
+
+                      let colorStyle: any = null;
+                      if (isRed) colorStyle = { bg: 'red.100', _dark: { bg: 'red.300', color: 'black' } };
+                      else if (isBlue) colorStyle = { bg: 'blue.100', _dark: { bg: 'blue.300', color: 'black' } };
+
+                      let query: string[] = [];
+                      if (isRed) query = redKeys.filter(k => symptom.includes(k));
+                      else if (isBlue) query = blueKeys.filter(k => symptom.includes(k));
+
+                      return (
+                        <li key={index}>
+                          {colorStyle ? (
+                            <Highlight query={query} styles={{ px: '1', py: '0.5', rounded: 'md', color: 'gray.900', ...colorStyle }}>
+                              {symptom}
+                            </Highlight>
+                          ) : (
+                            symptom
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
-                  
                   <h3 className="font-medium text-gray-900 dark:text-white mb-2">Coping Strategies:</h3>
                   <ul className="list-disc pl-5 text-gray-600 dark:text-gray-400">
-                    {condition.coping.map((strategy, index) => (
-                      <li key={index}>{strategy}</li>
-                    ))}
+                    {condition.coping.map((strategy, index) => {
+                      // Green only in coping (therapies/meds/routine/sleep); red if any danger words (rare here)
+                      const greenKeys = [
+                        'cognitive behavioral therapy (cbt)',
+                        'psychotherapy (talk therapy)',
+                        'eye movement desensitization and reprocessing (emdr)',
+                        'trauma-focused cognitive behavioral therapy',
+                        'mood stabilizing medications as prescribed',
+                        'medication when prescribed by a healthcare provider',
+                        'medication may be prescribed by a doctor',
+                        'regular therapy sessions',
+                        'support groups',
+                        'maintain a regular sleep schedule',
+                        'establish a routine',
+                        'maintaining a stable daily routine',
+                        'getting adequate sleep'
+                      ];
+                      const redKeys = ['suicide', 'death', 'injury', 'harm'];
+
+                      const lower = strategy.toLowerCase();
+                      const greenMatches = greenKeys.filter(k => lower.includes(k));
+                      const redMatches = redKeys.filter(k => lower.includes(k));
+
+                      let colorStyle: any = null;
+                      let query: string[] = [];
+                      if (redMatches.length) {
+                        colorStyle = { bg: 'red.100', _dark: { bg: 'red.300', color: 'black' } };
+                        query = redMatches;
+                      } else if (greenMatches.length) {
+                        colorStyle = { bg: 'green.100', _dark: { bg: 'green.300', color: 'black' } };
+                        query = greenMatches;
+                      }
+
+                      return (
+                        <li key={index}>
+                          {colorStyle ? (
+                            <Highlight query={query} styles={{ px: '1', py: '0.5', rounded: 'md', color: 'gray.900', ...colorStyle }}>
+                              {strategy}
+                            </Highlight>
+                          ) : (
+                            strategy
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
-              )}
-            </div>
+              </Accordion.ItemContent>
+            </Accordion.Item>
           ))}
-        </div>
+        </Accordion.Root>
       </div>
 
       {/* Self-Care Tips */}
