@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # MindEase 🧠✨
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -144,3 +145,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Ollama](https://ollama.ai/) for AI model hosting
 - [HuggingFace](https://huggingface.co/) for sentiment analysis
 - [Google OAuth](https://developers.google.com/identity/protocols/oauth2) for authentication 
+=======
+# Serenio
+>>>>>>> 04448c75e54be9113f718842dc0c3f99261286e7
