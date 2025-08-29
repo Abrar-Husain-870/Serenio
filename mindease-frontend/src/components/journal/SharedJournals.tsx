@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { Card, CardContent, Typography, Box, Avatar, Chip } from '@mui/material';
+import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
+import { Avatar as CAvatar } from '@chakra-ui/react';
+import { getRandomAvatarStyle } from '../../utils/avatar';
+
 import Grid from '@mui/material/Grid';
 import { useSelector } from 'react-redux';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -88,17 +91,32 @@ const SharedJournals: React.FC<SharedJournalsProps> = ({ refreshFlag }) => {
         Community Journals
       </Typography>
       <Grid container spacing={3}>
-        {entries.map((entry) => (
+        {entries.map((entry) => {
+          const style = getRandomAvatarStyle(entry.user._id || entry.user.name);
+          return (
           <Grid item xs={12} md={6} key={entry._id}>
             <Card className="bg-white/90 dark:bg-gray-900/90 border-0 rounded-2xl shadow-lg p-2">
               <CardContent className="p-4">
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Avatar
-                    src={entry.user.avatar}
-                    sx={{ mr: 2 }}
-                  >
-                    {entry.user.name[0]}
-                  </Avatar>
+                  <div style={{ marginRight: 8 }}>
+                    <CAvatar.Root
+                      size="sm"
+                      rounded="full"
+                      bg={style.bgLight}
+                      color={style.colorLight}
+                      borderWidth="2px"
+                      borderColor={style.borderColorLight}
+                      _dark={{ bg: style.bgDark, color: style.colorDark, borderColor: style.borderColorDark }}
+                    >
+                      {entry.user.avatar ? (
+                        <CAvatar.Image src={entry.user.avatar} alt={entry.user.name} />
+                      ) : (
+                        <CAvatar.Fallback fontWeight="bold">
+                          {entry.user.name?.[0] || 'U'}
+                        </CAvatar.Fallback>
+                      )}
+                    </CAvatar.Root>
+                  </div>
                   <Box sx={{ flexGrow: 1 }}>
                     <Typography variant="subtitle1" className="font-sans font-semibold text-gray-900 dark:text-gray-100">
                       {entry.user.name}
@@ -137,7 +155,8 @@ const SharedJournals: React.FC<SharedJournalsProps> = ({ refreshFlag }) => {
               </CardContent>
             </Card>
           </Grid>
-        ))}
+          );
+        })}
       </Grid>
     </Box>
   );

@@ -4,6 +4,7 @@ import { useAppDispatch } from '../store/hooks';
 import { loginSuccess } from '../store/slices/authSlice';
 import { toast } from 'react-toastify';
 import axiosInstance from '../utils/api';
+import { Flex, Box, Heading, Spinner } from '@chakra-ui/react';
 
 const OAuthSuccess: React.FC = () => {
   const navigate = useNavigate();
@@ -34,15 +35,15 @@ const OAuthSuccess: React.FC = () => {
   }, [dispatch, navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="text-center">
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+    <Flex minH="100vh" align="center" justify="center" bg="gray.50">
+      <Box textAlign="center">
+        <Heading as="h2" size="lg" color="gray.900" mb={4}>
           Completing login...
-        </h2>
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
-      </div>
-    </div>
+        </Heading>
+        <Spinner color="accent.600" size="lg" />
+      </Box>
+    </Flex>
   );
 };
 
-export default OAuthSuccess; 
+export default OAuthSuccess;

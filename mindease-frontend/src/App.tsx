@@ -1,7 +1,5 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import Layout from './components/Layout';
@@ -9,6 +7,7 @@ import Chatbot from './components/Chatbot';
 import { useAppDispatch, useAppSelector } from './store/hooks';
 import { loginSuccess } from './store/slices/authSlice';
 import axiosInstance from './utils/api';
+import GlobalAlerts from './components/GlobalAlerts';
 
 // Pages
 import Login from './pages/Login';
@@ -69,6 +68,7 @@ const AppContent: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
+      <GlobalAlerts />
       
       <div>
         <Routes>
@@ -108,19 +108,6 @@ const AppContent: React.FC = () => {
       <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 50 }}>
         <Chatbot />
       </div>
-      
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
     </div>
   );
 };

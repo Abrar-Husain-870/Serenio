@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FiBell,FiMoon, FiSun } from 'react-icons/fi';
-import { toast } from 'react-toastify';
-import { useAppSelector } from '../store/hooks';
-import axiosInstance from '../utils/api';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { addAlert } from '../store/slices/alertSlice';
 import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
   const { user, token } = useAppSelector(state => state.auth);
+  const dispatch = useAppDispatch();
+
   const [settings, setSettings] = useState({
     darkMode: document.documentElement.classList.contains('dark'),
     notifications: true,
@@ -18,33 +19,15 @@ const Settings = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        setIsLoading(true);
-        const headers: any = {};
-        if (token && token !== 'cookie') {
-          headers.Authorization = `Bearer ${token}`;
-        }
-        const response = await axiosInstance.get('/settings', {
-          headers,
-          withCredentials: true
-        });
-        if (response.data) {
-          setSettings(prev => ({
-            ...prev,
-            ...response.data,
-            darkMode: document.documentElement.classList.contains('dark')
-          }));
-        }
-      } catch (error) {
-        console.error('Error fetching settings:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (token) {
-      fetchSettings();
+    setIsLoading(true);
+    try {
+      const storedDark = localStorage.getItem('darkMode');
+      const darkMode = storedDark === null
+        ? document.documentElement.classList.contains('dark')
+        : storedDark === 'true';
+      setSettings(prev => ({ ...prev, darkMode }));
+    } finally {
+      setIsLoading(false);
     }
   }, [token]);
 
@@ -62,8 +45,13 @@ const Settings = () => {
       }
     } catch (error) {
       console.error('Error updating settings:', error);
-      toast.error('Failed to update settings');
-      // Revert the change if the API call fails
+      dispatch(addAlert({
+        status: 'error',
+        title: 'Update failed',
+        description: 'Failed to update settings',
+        durationMs: 4000,
+      }));
+
       if (setting === 'darkMode') {
         document.documentElement.classList.toggle('dark');
         setSettings(prev => ({ ...prev, darkMode: !prev.darkMode }));
@@ -81,8 +69,12 @@ const Settings = () => {
       setSettings(prev => ({ ...prev, reminderTime: newTime }));
     } catch (error) {
       console.error('Error updating reminder time:', error);
-      toast.error('Failed to update reminder time');
-      // Revert the change if the API call fails
+      dispatch(addAlert({
+        status: 'error',
+        title: 'Update failed',
+        description: 'Failed to update reminder time',
+        durationMs: 4000,
+      }));
       setSettings(prev => ({ ...prev, reminderTime: prev.reminderTime }));
     }
   };

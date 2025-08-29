@@ -3,6 +3,7 @@ import authReducer from './slices/authSlice';
 import moodReducer from './slices/moodSlice';
 import journalReducer from './slices/journalSlice';
 import activityReducer from './slices/activitySlice';
+import alertsReducer from './slices/alertSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,8 +11,9 @@ export const store = configureStore({
     mood: moodReducer,
     journal: journalReducer,
     activity: activityReducer,
+    alerts: alertsReducer,
   },
 });
 
 export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch; 
+export type AppDispatch = typeof store.dispatch;

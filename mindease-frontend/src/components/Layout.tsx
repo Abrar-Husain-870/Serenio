@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FiHome, FiBook, FiActivity, FiSmile, FiStar, FiSun, FiBarChart2, FiMenu, FiSettings, FiClipboard } from 'react-icons/fi';
 import { Outlet } from 'react-router-dom';
+import { Box, Flex, VStack, Button, Icon } from '@chakra-ui/react';
 
 const navLinks = [
   { to: '/dashboard', label: 'Dashboard', icon: <FiHome /> },
@@ -19,39 +20,72 @@ const Layout: React.FC = () => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  // Colors adapt via _dark overrides to respect app theme
+
   return (
-    <div className="flex min-h-screen">
+    <Flex minH="100vh">
       {/* Sidebar */}
-      <aside className={`bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 pt-0 px-2 flex flex-col gap-2 transition-all duration-200 ${sidebarOpen ? 'w-56' : 'w-16'} min-h-screen`}>
-        {/* Hamburger at the very top left */}
-        <div className="flex items-center justify-start mb-1 px-2 mt-0">
-          <button
-            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+      <Box
+        as="aside"
+        bg="white"
+        _dark={{ bg: 'gray.900', borderRightColor: 'gray.700' }}
+        borderRightWidth="1px"
+        borderRightColor="gray.200"
+        pt={0}
+        px={2}
+        display="flex"
+        flexDirection="column"
+        gap={2}
+        transition="width 200ms ease"
+        w={sidebarOpen ? '14rem' : '4rem'}
+        minH="100vh"
+      >
+        {/* Hamburger */}
+        <Flex align="center" justify="flex-start" mb={1} px={2} mt={0}>
+          <Button
+            size="sm"
+            variant="ghost"
+            rounded="md"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Toggle sidebar"
           >
-            <FiMenu className="w-6 h-6" />
-          </button>
-        </div>
-        <nav className="flex flex-col gap-1 overflow-y-auto mt-0">
-          {navLinks.map(link => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className={`flex items-center gap-3 px-4 py-2 rounded-lg font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition ${location.pathname === link.to ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : ''}`}
-            >
-              {link.icon}
-              {sidebarOpen && link.label}
-            </Link>
-          ))}
-        </nav>
-      </aside>
+            <Icon as={FiMenu} boxSize={6} />
+          </Button>
+        </Flex>
+
+        <VStack align="stretch" gap={1} overflowY="auto" mt={0}>
+          {navLinks.map(link => {
+            const active = location.pathname === link.to;
+            return (
+              <Link key={link.to} to={link.to} style={{ textDecoration: 'none' }}>
+                <Flex
+                  align="center"
+                  gap={3}
+                  px={4}
+                  py={2}
+                  rounded="lg"
+                  fontWeight="medium"
+                  color={active ? 'gray.800' : undefined}
+                  bg={active ? 'brand.100' : 'transparent'}
+                  _dark={active ? { bg: 'gray.700', color: 'white' } : {}}
+                  _hover={{ bg: 'gray.100', _dark: { bg: 'gray.800' } }}
+                  transition="background-color 200ms ease"
+                >
+                  <Box as="span">{link.icon}</Box>
+                  {sidebarOpen && <Box as="span">{link.label}</Box>}
+                </Flex>
+              </Link>
+            );
+          })}
+        </VStack>
+      </Box>
+
       {/* Main Content */}
-      <main className="flex-1 px-4 py-8 min-h-screen">
+      <Box as="main" flex="1" px={4} py={8} minH="100vh">
         <Outlet />
-      </main>
-    </div>
+      </Box>
+    </Flex>
   );
 };
 
-export default Layout; 
+export default Layout;

@@ -1,15 +1,15 @@
 import React from 'react';
-import { Container, Typography, Box, Tabs, Tab } from '@mui/material';
+import { Container, Heading, Tabs } from '@chakra-ui/react';
 import JournalEntry from '../components/journal/JournalEntry';
 import JournalList from '../components/journal/JournalList';
 import SharedJournals from '../components/journal/SharedJournals';
 
 const Journal: React.FC = () => {
-  const [tabValue, setTabValue] = React.useState(0);
+  const [tabValue, setTabValue] = React.useState('my');
   const [refreshFlag, setRefreshFlag] = React.useState(0);
 
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
+  const handleTabChange = (details: any) => {
+    setTabValue(details.value);
   };
 
   const handleEntryCreated = () => {
@@ -17,52 +17,54 @@ const Journal: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg">
-      <Typography variant="h4" component="h1" gutterBottom>
+    <Container maxW="container.lg">
+      <Heading as="h1" size="lg" mb={4}>
         Journal
-      </Typography>
-      
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tab 
-            label="My Journal" 
-            sx={{
-              fontFamily: 'Montserrat, Arial, sans-serif',
-              fontWeight: 700,
-              color: tabValue === 0 ? '#2563eb' : '#64748b',
-              fontSize: '1.1rem',
-              textTransform: 'none',
-              background: tabValue === 0 ? 'linear-gradient(90deg, #6366f1 0%, #60a5fa 100%)' : 'none',
-              borderRadius: '1rem 1rem 0 0',
-              transition: 'all 0.2s',
-            }}
-          />
-          <Tab 
-            label="Community Journals" 
-            sx={{
-              fontFamily: 'Montserrat, Arial, sans-serif',
-              fontWeight: 700,
-              color: tabValue === 1 ? '#2563eb' : '#64748b',
-              fontSize: '1.1rem',
-              textTransform: 'none',
-              background: tabValue === 1 ? 'linear-gradient(90deg, #6366f1 0%, #60a5fa 100%)' : 'none',
-              borderRadius: '1rem 1rem 0 0',
-              transition: 'all 0.2s',
-            }}
-          />
-        </Tabs>
-      </Box>
+      </Heading>
 
-      {tabValue === 0 ? (
-        <>
+      <Tabs.Root value={tabValue} onValueChange={handleTabChange}>
+        <Tabs.List borderBottomWidth="1px" borderColor="gray.200" mb={3}>
+          <Tabs.Trigger
+            value="my"
+            fontFamily="Montserrat, Arial, sans-serif"
+            fontWeight={700}
+            fontSize="1.1rem"
+            textTransform="none"
+            borderTopLeftRadius="1rem"
+            borderTopRightRadius="1rem"
+            _selected={{
+              bg: 'linear-gradient(90deg, #6366f1 0%, #60a5fa 100%)',
+              color: '#2563eb',
+            }}
+          >
+            My Journal
+          </Tabs.Trigger>
+          <Tabs.Trigger
+            value="community"
+            fontFamily="Montserrat, Arial, sans-serif"
+            fontWeight={700}
+            fontSize="1.1rem"
+            textTransform="none"
+            borderTopLeftRadius="1rem"
+            borderTopRightRadius="1rem"
+            _selected={{
+              bg: 'linear-gradient(90deg, #6366f1 0%, #60a5fa 100%)',
+              color: '#2563eb',
+            }}
+          >
+            Community Journals
+          </Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Content value="my" px={0}>
           <JournalEntry onEntryCreated={handleEntryCreated} />
           <JournalList refreshFlag={refreshFlag} />
-        </>
-      ) : (
-        <SharedJournals refreshFlag={refreshFlag} />
-      )}
+        </Tabs.Content>
+        <Tabs.Content value="community" px={0}>
+          <SharedJournals refreshFlag={refreshFlag} />
+        </Tabs.Content>
+      </Tabs.Root>
     </Container>
   );
 };
 
-export default Journal; 
+export default Journal;

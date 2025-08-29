@@ -3,10 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../store/hooks';
 import { loginStart, loginSuccess, loginFailure } from '../store/slices/authSlice';
 import { FcGoogle } from 'react-icons/fc';
-import { toast } from 'react-toastify';
 import axiosInstance from '../utils/api';
 import { restoreUserDataAfterLogin } from '../utils/userDataStorage';
 import mindeaseLogo from '../assets/mindease-logo.svg';
+import { Flex, Box, Heading, Text, Button, Stack } from '@chakra-ui/react';
+import { addAlert } from '../store/slices/alertSlice';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -49,12 +50,12 @@ const Login: React.FC = () => {
         restoreUserDataAfterLogin(data.user.id);
       }
       
-      toast.success('Login successful!');
+      dispatch(addAlert({ status: 'success', title: 'Login successful', description: 'Redirecting to dashboard...' }));
       navigate('/dashboard');
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || error.message || 'Login failed';
       dispatch(loginFailure(errorMessage));
-      toast.error(errorMessage);
+      dispatch(addAlert({ status: 'error', title: 'Login failed', description: errorMessage }));
     } finally {
       setIsLoading(false);
     }
@@ -69,87 +70,89 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4">
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 space-y-8">
-        <div className="flex flex-col items-center">
-          <img src={mindeaseLogo} alt="MindEase Logo" className="h-16 w-16 mb-4" />
-          <h2 className="text-center text-3xl font-extrabold text-gray-900 dark:text-white mb-2">
+    <Flex minH="100vh" align="center" justify="center" bg="gray.50" _dark={{ bg: 'gray.900' }} py={12} px={4}>
+      <Box maxW="md" w="full" bg="white" _dark={{ bg: 'gray.800' }} rounded="2xl" shadow="softLg" p={8}>
+        <Flex direction="column" align="center" mb={6}>
+          <img src={mindeaseLogo} alt="MindEase Logo" style={{ height: 64, width: 64, marginBottom: 16 }} />
+          <Heading as="h2" size="xl" color="gray.900" mb={2} textAlign="center">
             Welcome to MindEase
-          </h2>
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-6">
-            Sign in to your account
-          </p>
-        </div>
-        <div className="flex flex-col gap-4">
-          <button
-            onClick={handleGoogleLogin}
-            className="flex items-center justify-center gap-2 w-full py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-100 transition"
-            disabled={isLoading}
-          >
-            <FcGoogle className="w-5 h-5" />
-            <span className="font-medium text-gray-700">Sign in with Google</span>
-          </button>
-        </div>
+          </Heading>
+          <Text fontSize="sm" color="gray.600" textAlign="center">Sign in to your account</Text>
+        </Flex>
 
-        <div className="flex items-center my-4">
-          <div className="flex-grow border-t border-gray-300"></div>
-          <span className="mx-2 text-gray-400">or</span>
-          <div className="flex-grow border-t border-gray-300"></div>
-        </div>
+        <Stack gap={4}>
+          <Button onClick={handleGoogleLogin} variant="outline" borderColor="gray.300" bg="white" _hover={{ bg: 'gray.100' }} disabled={isLoading}>
+            <Flex align="center" gap={2} justify="center" w="full">
+              <FcGoogle size={20} />
+              <Text fontWeight="medium" color="gray.700">Sign in with Google</Text>
+            </Flex>
+          </Button>
+        </Stack>
 
-        <form className="space-y-5" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Email address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              className="input"
-              placeholder="Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              className="input"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-          <button
-            type="submit"
-            className="btn btn-primary w-full mt-2"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Signing in...' : 'Sign in'}
-          </button>
-        </form>
+        <Flex align="center" my={4} w="full">
+          <Box flexGrow={1} h="1px" bg="gray.300" />
+          <Text mx={2} color="gray.400">or</Text>
+          <Box flexGrow={1} h="1px" bg="gray.300" />
+        </Flex>
 
-        <div className="text-sm text-center mt-4">
-          <Link
-            to="/signup"
-            className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400"
-          >
+        <Box as="form" onSubmit={handleSubmit}>
+          <Stack gap={5}>
+            <Box>
+              <label htmlFor="email" style={{ display: 'block', marginBottom: 4, fontSize: '0.875rem', fontWeight: 500, color: 'var(--chakra-colors-gray-700)' }}>
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--chakra-colors-gray-300)'
+                }}
+              />
+            </Box>
+            <Box>
+              <label htmlFor="password" style={{ display: 'block', marginBottom: 4, fontSize: '0.875rem', fontWeight: 500, color: 'var(--chakra-colors-gray-700)' }}>
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--chakra-colors-gray-300)'
+                }}
+              />
+            </Box>
+            <Button type="submit" w="full" mt={2} bg="accent.600" color="gray.900" _hover={{ bg: 'accent.500' }} disabled={isLoading}>
+              {isLoading ? 'Signing in...' : 'Sign in'}
+            </Button>
+          </Stack>
+        </Box>
+
+        <Text fontSize="sm" textAlign="center" mt={4}>
+          <Link to="/signup" style={{ textDecoration: 'none', color: 'var(--chakra-colors-accent-600)' }}>
             Don't have an account? Sign up
           </Link>
-        </div>
-      </div>
-    </div>
+        </Text>
+      </Box>
+    </Flex>
   );
 };
 
-export default Login; 
+export default Login;

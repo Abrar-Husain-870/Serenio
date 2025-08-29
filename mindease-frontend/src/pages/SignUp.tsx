@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { useAppDispatch } from '../store/hooks';
 import { loginSuccess } from '../store/slices/authSlice';
 import { FcGoogle } from 'react-icons/fc';
@@ -8,6 +7,8 @@ import { FaFacebook } from 'react-icons/fa';
 import { API_BASE_URL } from '../utils/api';
 import { restoreUserDataAfterLogin } from '../utils/userDataStorage';
 import mindeaseLogo from '../assets/mindease-logo.svg';
+import { Flex, Box, Heading, Text, Button, Stack } from '@chakra-ui/react';
+import { addAlert } from '../store/slices/alertSlice';
 
 const SignUp: React.FC = () => {
   const [name, setName] = useState('');
@@ -22,7 +23,7 @@ const SignUp: React.FC = () => {
     setIsLoading(true);
     
     try {
-             const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,10 +48,10 @@ const SignUp: React.FC = () => {
         restoreUserDataAfterLogin(data.user.id);
       }
       
-      toast.success('Registration successful!');
+      dispatch(addAlert({ status: 'success', title: 'Registration successful', description: 'Redirecting to dashboard...' }));
       navigate('/dashboard');
     } catch (error: any) {
-      toast.error('Registration error: ' + error.message);
+      dispatch(addAlert({ status: 'error', title: 'Registration failed', description: error.message || 'Something went wrong' }));
     } finally {
       setIsLoading(false);
     }
@@ -67,111 +68,120 @@ const SignUp: React.FC = () => {
   };
   
   const handleFacebookLogin = () => {
-    toast.info('Facebook login coming soon!');
+    dispatch(addAlert({ status: 'warning', title: 'Coming soon', description: 'Facebook login will be available shortly.' }));
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4">
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 space-y-8">
-        <div className="flex flex-col items-center">
-          <img src={mindeaseLogo} alt="MindEase Logo" className="h-16 w-16 mb-4" />
-          <h2 className="text-center text-3xl font-extrabold text-gray-900 dark:text-white mb-2">
+    <Flex minH="100vh" align="center" justify="center" bg="gray.50" _dark={{ bg: 'gray.900' }} py={12} px={4}>
+      <Box maxW="md" w="full" bg="white" _dark={{ bg: 'gray.800' }} rounded="2xl" shadow="softLg" p={8}>
+        <Flex direction="column" align="center" mb={6}>
+          <img src={mindeaseLogo} alt="MindEase Logo" style={{ height: 64, width: 64, marginBottom: 16 }} />
+          <Heading as="h2" size="xl" color="gray.900" mb={2} textAlign="center">
             Create your account
-          </h2>
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-6">
-            Join MindEase and start your wellness journey
-          </p>
-        </div>
-        <div className="flex flex-col gap-4">
-          <button
-            onClick={handleGoogleLogin}
-            className="flex items-center justify-center gap-2 w-full py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-100 transition"
-            disabled={isLoading}
-          >
-            <FcGoogle className="w-5 h-5" />
-            <span className="font-medium text-gray-700">Sign up with Google</span>
-          </button>
-          <button
-            onClick={handleFacebookLogin}
-            className="flex items-center justify-center gap-2 w-full py-2 border border-gray-300 rounded-lg bg-blue-600 hover:bg-blue-700 transition text-white"
-          >
-            <FaFacebook className="w-5 h-5" />
-            <span className="font-medium">Sign up with Facebook</span>
-          </button>
-        </div>
-        <div className="flex items-center my-4">
-          <div className="flex-grow border-t border-gray-300"></div>
-          <span className="mx-2 text-gray-400">or</span>
-          <div className="flex-grow border-t border-gray-300"></div>
-        </div>
-        <form className="space-y-5" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Full name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
-              className="input"
-              placeholder="Full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Email address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              className="input"
-              placeholder="Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              className="input"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-          <button
-            type="submit"
-            className="btn btn-primary w-full mt-2"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Creating account...' : 'Sign up'}
-          </button>
-        </form>
-        <div className="text-sm text-center mt-4">
-          <Link
-            to="/login"
-            className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400"
-          >
+          </Heading>
+          <Text fontSize="sm" color="gray.600" textAlign="center">Join MindEase and start your wellness journey</Text>
+        </Flex>
+
+        <Stack gap={4}>
+          <Button onClick={handleGoogleLogin} variant="outline" borderColor="gray.300" bg="white" _hover={{ bg: 'gray.100' }} disabled={isLoading}>
+            <Flex align="center" gap={2} justify="center" w="full">
+              <FcGoogle size={20} />
+              <Text fontWeight="medium" color="gray.700">Sign up with Google</Text>
+            </Flex>
+          </Button>
+          <Button onClick={handleFacebookLogin} bg="blue.600" _hover={{ bg: 'blue.700' }} color="white">
+            <Flex align="center" gap={2} justify="center" w="full">
+              <FaFacebook size={20} />
+              <Text fontWeight="medium">Sign up with Facebook</Text>
+            </Flex>
+          </Button>
+        </Stack>
+
+        <Flex align="center" my={4} w="full">
+          <Box flexGrow={1} h="1px" bg="gray.300" />
+          <Text mx={2} color="gray.400">or</Text>
+          <Box flexGrow={1} h="1px" bg="gray.300" />
+        </Flex>
+
+        <Box as="form" onSubmit={handleSubmit}>
+          <Stack gap={5}>
+            <Box>
+              <label htmlFor="name" style={{ display: 'block', marginBottom: 4, fontSize: '0.875rem', fontWeight: 500, color: 'var(--chakra-colors-gray-700)' }}>
+                Full name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                placeholder="Full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isLoading}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--chakra-colors-gray-300)'
+                }}
+              />
+            </Box>
+            <Box>
+              <label htmlFor="email" style={{ display: 'block', marginBottom: 4, fontSize: '0.875rem', fontWeight: 500, color: 'var(--chakra-colors-gray-700)' }}>
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--chakra-colors-gray-300)'
+                }}
+              />
+            </Box>
+            <Box>
+              <label htmlFor="password" style={{ display: 'block', marginBottom: 4, fontSize: '0.875rem', fontWeight: 500, color: 'var(--chakra-colors-gray-700)' }}>
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--chakra-colors-gray-300)'
+                }}
+              />
+            </Box>
+            <Button type="submit" w="full" mt={2} bg="accent.600" color="gray.900" _hover={{ bg: 'accent.500' }} disabled={isLoading}>
+              {isLoading ? 'Creating account...' : 'Sign up'}
+            </Button>
+          </Stack>
+        </Box>
+
+        <Text fontSize="sm" textAlign="center" mt={4}>
+          <Link to="/login" style={{ textDecoration: 'none', color: 'var(--chakra-colors-accent-600)' }}>
             Already have an account? Sign in
           </Link>
-        </div>
-      </div>
-    </div>
+        </Text>
+      </Box>
+    </Flex>
   );
 };
 
-export default SignUp; 
+export default SignUp;

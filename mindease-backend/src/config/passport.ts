@@ -39,7 +39,7 @@ const initializePassport = (): void => {
     {
       clientID: googleClientId,
       clientSecret: googleClientSecret,
-      callbackURL: `${process.env.BACKEND_URL || 'https://mindease-backend-84xe.onrender.com'}/auth/google/callback`,
+      callbackURL: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/google/callback`,
       scope: ['profile', 'email']
     },
     async (accessToken, refreshToken, profile, done) => {
