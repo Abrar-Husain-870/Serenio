@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FiInfo, FiBookOpen, FiBriefcase, FiUsers, FiHeart, FiExternalLink } from 'react-icons/fi';
+import { Card } from '@chakra-ui/react';
 
 interface Resource {
   id: string;
@@ -243,41 +244,51 @@ const Awareness: React.FC = () => {
       </div>
 
       {/* Self-Care Tips */}
-      <div className="card">
-        <div className="flex items-center mb-4">
-          <FiHeart className="w-5 h-5 text-red-600 dark:text-red-400 mr-2" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Self-Care Practices</h2>
-        </div>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Taking care of your mental health is just as important as physical health. Here are some daily practices that can help.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <h3 className="font-medium text-gray-900 dark:text-white mb-2">Mindfulness Meditation</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Practice being present in the moment without judgment. Just 5-10 minutes daily can reduce stress and anxiety.
-            </p>
+      <Card.Root>
+        <Card.Body>
+          <div className="flex items-center mb-4">
+            <FiHeart className="w-5 h-5 text-red-600 dark:text-red-400 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Self-Care Practices</h2>
           </div>
-          <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <h3 className="font-medium text-gray-900 dark:text-white mb-2">Physical Exercise</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Regular physical activity releases endorphins, which naturally boost mood and reduce stress hormones.
-            </p>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Taking care of your mental health is just as important as physical health. Here are some daily practices that can help.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card.Root variant="subtle">
+              <Card.Body>
+                <h3 className="font-medium text-gray-900 dark:text-white mb-2">Mindfulness Meditation</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Practice being present in the moment without judgment. Just 5-10 minutes daily can reduce stress and anxiety.
+                </p>
+              </Card.Body>
+            </Card.Root>
+            <Card.Root variant="subtle">
+              <Card.Body>
+                <h3 className="font-medium text-gray-900 dark:text-white mb-2">Physical Exercise</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Regular physical activity releases endorphins, which naturally boost mood and reduce stress hormones.
+                </p>
+              </Card.Body>
+            </Card.Root>
+            <Card.Root variant="subtle">
+              <Card.Body>
+                <h3 className="font-medium text-gray-900 dark:text-white mb-2">Healthy Sleep Habits</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Maintain a regular sleep schedule. Poor sleep can worsen symptoms of many mental health conditions.
+                </p>
+              </Card.Body>
+            </Card.Root>
+            <Card.Root variant="subtle">
+              <Card.Body>
+                <h3 className="font-medium text-gray-900 dark:text-white mb-2">Social Connection</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Maintain relationships with supportive friends and family. Social isolation can worsen depression and anxiety.
+                </p>
+              </Card.Body>
+            </Card.Root>
           </div>
-          <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <h3 className="font-medium text-gray-900 dark:text-white mb-2">Healthy Sleep Habits</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Maintain a regular sleep schedule. Poor sleep can worsen symptoms of many mental health conditions.
-            </p>
-          </div>
-          <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <h3 className="font-medium text-gray-900 dark:text-white mb-2">Social Connection</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Maintain relationships with supportive friends and family. Social isolation can worsen depression and anxiety.
-            </p>
-          </div>
-        </div>
-      </div>
+        </Card.Body>
+      </Card.Root>
 
       {/* Stigma Reduction */}
       <div className="card">
@@ -313,39 +324,45 @@ const Awareness: React.FC = () => {
       </div>
 
       {/* Resources */}
-      <div className="card">
-        <div className="flex items-center mb-4">
-          <FiBriefcase className="w-5 h-5 text-primary-600 dark:text-primary-400 mr-2" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Helpful Resources</h2>
-        </div>
-        <div className="space-y-4">
-          {resources.map(resource => (
-            <div key={resource.id} className="flex items-start space-x-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <div className="p-2 rounded-full bg-primary-100 dark:bg-primary-900 mt-1">
-                {resource.category === 'organization' && <FiUsers className="w-4 h-4 text-primary-600 dark:text-primary-400" />}
-                {resource.category === 'article' && <FiBookOpen className="w-4 h-4 text-primary-600 dark:text-primary-400" />}
-                {resource.category === 'video' && <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-primary-600 dark:text-primary-400"><path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-                {resource.category === 'app' && <FiHeart className="w-4 h-4 text-primary-600 dark:text-primary-400" />}
-              </div>
-              <div className="flex-1">
-                <h3 className="font-medium text-gray-900 dark:text-white flex items-center">
-                  {resource.title}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">{resource.description}</p>
-                <a 
-                  href={resource.link} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 mt-2"
-                >
-                  Visit resource
-                  <FiExternalLink className="ml-1 w-4 h-4" />
-                </a>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <Card.Root>
+        <Card.Body>
+          <div className="flex items-center mb-4">
+            <FiBriefcase className="w-5 h-5 text-primary-600 dark:text-primary-400 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Helpful Resources</h2>
+          </div>
+          <div className="space-y-4">
+            {resources.map(resource => (
+              <Card.Root key={resource.id} variant="subtle">
+                <Card.Body>
+                  <div className="flex items-start space-x-3">
+                    <div className="p-2 rounded-full bg-primary-100 dark:bg-primary-900 mt-1">
+                      {resource.category === 'organization' && <FiUsers className="w-4 h-4 text-primary-600 dark:text-primary-400" />}
+                      {resource.category === 'article' && <FiBookOpen className="w-4 h-4 text-primary-600 dark:text-primary-400" />}
+                      {resource.category === 'video' && <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-primary-600 dark:text-primary-400"><path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+                      {resource.category === 'app' && <FiHeart className="w-4 h-4 text-primary-600 dark:text-primary-400" />}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900 dark:text-white flex items-center">
+                        {resource.title}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">{resource.description}</p>
+                      <a 
+                        href={resource.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 mt-2"
+                      >
+                        Visit resource
+                        <FiExternalLink className="ml-1 w-4 h-4" />
+                      </a>
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card.Root>
+            ))}
+          </div>
+        </Card.Body>
+      </Card.Root>
 
       {/* Emergency Information */}
       <div className="card bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiChevronLeft, FiChevronRight, FiHeart, FiCopy, FiShare2, FiRefreshCw } from 'react-icons/fi';
 import { toast } from 'react-toastify';
+import { Blockquote, Float } from '@chakra-ui/react';
 
 // Enhanced content array with more jokes, memes, and categories
 const sampleContent: ContentItem[] = [
@@ -765,14 +766,19 @@ const UpliftingContent: React.FC = () => {
             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6 min-h-[200px]">
               {currentContent.type === 'quote' ? (
                 <div className="flex flex-col items-center text-center">
-                  <blockquote className="text-xl font-semibold text-gray-900 dark:text-white mb-4 italic">
-                    "{currentContent.content}"
-                  </blockquote>
-                  {currentContent.author && (
-                    <cite className="text-gray-600 dark:text-gray-400 not-italic">
-                      — {currentContent.author}
-                    </cite>
-                  )}
+                  <Blockquote.Root variant="plain" colorPalette="teal" justify="center">
+                    <Float placement="top-start" offsetY="2">
+                      <Blockquote.Icon />
+                    </Float>
+                    <Blockquote.Content cite="https://">
+                      {currentContent.content}
+                    </Blockquote.Content>
+                    {currentContent.author && (
+                      <Blockquote.Caption>
+                        <cite>— {currentContent.author}</cite>
+                      </Blockquote.Caption>
+                    )}
+                  </Blockquote.Root>
                 </div>
               ) : currentContent.type === 'joke' || currentContent.type === 'ai_joke' || currentContent.type === 'fact' ? (
                 <div className="flex flex-col items-center text-center">

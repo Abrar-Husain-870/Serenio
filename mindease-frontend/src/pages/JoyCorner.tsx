@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FiSmile, FiPlayCircle, FiImage, FiEdit3, FiStar } from 'react-icons/fi';
+import { FiSmile, FiCommand, FiImage, FiEdit3, FiStar } from 'react-icons/fi';
+import { Card, Heading, Text } from '@chakra-ui/react';
 import { useAppSelector } from '../store/hooks';
 import { Link } from 'react-router-dom';
 import MemoryGame from '../components/joy/MemoryGame';
@@ -121,58 +122,82 @@ const MiniGames = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Memory Game Card */}
-        <div className="card hover:shadow-lg transition-shadow">
-          <div className="h-40 bg-gradient-to-r from-pink-500 to-purple-500 rounded-t-lg flex items-center justify-center">
-            <FiPlayCircle className="text-white w-16 h-16" />
-          </div>
-          <div className="p-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Memory Match</h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+        <Card.Root variant="elevated" overflow="hidden" borderRadius="lg" shadow="md">
+          <Card.Body p={0}>
+            <div
+              className="w-full h-40 flex items-center justify-center"
+              style={{
+                backgroundImage: 'linear-gradient(to right, var(--tw-gradient-from, #ec4899), var(--tw-gradient-to, #a855f7))',
+                backgroundColor: '#ec4899'
+              }}
+            >
+              <FiCommand className="text-white" size={64} />
+            </div>
+          </Card.Body>
+          <Card.Body>
+            <Heading size="md" className="text-gray-900 dark:text-white">Memory Match</Heading>
+            <Text className="text-gray-600 dark:text-gray-400 text-sm mt-1">
               Test your memory by matching pairs of cards
-            </p>
+            </Text>
             <button 
               className="btn btn-primary mt-4 w-full"
               onClick={() => handleGameSelect('memory')}
             >
               Play Now
             </button>
-          </div>
-        </div>
+          </Card.Body>
+        </Card.Root>
         
         {/* Word Puzzle Card */}
-        <div className="card hover:shadow-lg transition-shadow">
-          <div className="h-40 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-t-lg flex items-center justify-center">
-            <FiPlayCircle className="text-white w-16 h-16" />
-          </div>
-          <div className="p-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Word Jumble</h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+        <Card.Root variant="elevated" overflow="hidden" borderRadius="lg" shadow="md">
+          <Card.Body p={0}>
+            <div
+              className="w-full h-40 flex items-center justify-center"
+              style={{
+                backgroundImage: 'linear-gradient(to right, #3b82f6, #06b6d4)',
+                backgroundColor: '#3b82f6'
+              }}
+            >
+              <FiCommand className="text-white" size={64} />
+            </div>
+          </Card.Body>
+          <Card.Body>
+            <Heading size="md" className="text-gray-900 dark:text-white">Word Jumble</Heading>
+            <Text className="text-gray-600 dark:text-gray-400 text-sm mt-1">
               Unscramble the words to complete the puzzle
-            </p>
+            </Text>
             <button 
               className="btn btn-primary mt-4 w-full"
               onClick={() => handleGameSelect('wordjumble')}
             >
               Play Now
             </button>
-          </div>
-        </div>
+          </Card.Body>
+        </Card.Root>
         
         {/* Coming Soon Card */}
-        <div className="card hover:shadow-lg transition-shadow opacity-70">
-          <div className="h-40 bg-gradient-to-r from-gray-500 to-gray-600 rounded-t-lg flex items-center justify-center">
-            <FiPlayCircle className="text-white w-16 h-16" />
-          </div>
-          <div className="p-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Coming Soon</h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+        <Card.Root variant="elevated" overflow="hidden" borderRadius="lg" shadow="md" className="opacity-90">
+          <Card.Body p={0}>
+            <div
+              className="w-full h-40 flex items-center justify-center"
+              style={{
+                backgroundImage: 'linear-gradient(to right, #fb923c, #ec4899)',
+                backgroundColor: '#fb923c'
+              }}
+            >
+              <FiStar className="text-white" size={64} />
+            </div>
+          </Card.Body>
+          <Card.Body>
+            <Heading size="md" className="text-gray-900 dark:text-white">Coming Soon</Heading>
+            <Text className="text-gray-600 dark:text-gray-400 text-sm mt-1">
               More games are on the way!
-            </p>
+            </Text>
             <button className="btn btn-secondary mt-4 w-full" disabled>
               Coming Soon
             </button>
-          </div>
-        </div>
+          </Card.Body>
+        </Card.Root>
       </div>
     </div>
   );
@@ -382,7 +407,7 @@ const JoyCorner: React.FC = () => {
           }`}
           onClick={() => setActiveTab('games')}
         >
-          <FiPlayCircle className="inline-block mr-1" />
+          <FiCommand className="inline-block mr-1" />
           Mini Games
         </button>
         <button

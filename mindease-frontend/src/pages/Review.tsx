@@ -3,6 +3,7 @@ import { FiTrendingUp, FiCheckCircle, FiActivity, FiHeart, FiSmile } from 'react
 import axiosInstance from '../utils/api';
 import { toast } from 'react-toastify';
 import { useAppSelector } from '../store/hooks';
+import { Blockquote, Float } from '@chakra-ui/react';
 
 interface MoodEntry {
   mood: string;
@@ -108,7 +109,14 @@ const Review: React.FC = () => {
           <h2 className="text-xl font-semibold">Thought for Today</h2>
         </div>
         <div className="py-4">
-          <p className="text-lg italic mb-2">"{quote}"</p>
+          <Blockquote.Root variant="plain" colorPalette="teal" justify="center">
+            <Float placement="top-start" offsetY="2">
+              <Blockquote.Icon />
+            </Float>
+            <Blockquote.Content cite="https://">
+              {quote}
+            </Blockquote.Content>
+          </Blockquote.Root>
         </div>
       </div>
 

@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../store/index';
 import { FaRegCommentDots, FaBrain, FaCalendarAlt, FaExclamationTriangle, FaChartLine } from 'react-icons/fa';
 import { API_BASE_URL } from '../utils/api';
+import { CloseButton } from '@chakra-ui/react';
 
 const Chatbot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -145,12 +146,7 @@ const Chatbot: React.FC = () => {
         <div className="bg-gray-900 rounded-lg shadow-xl w-96 h-[500px] flex flex-col border border-gray-700">
           <div className="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-800 rounded-t-lg">
             <h3 className="font-semibold text-white">Chat with MindEase</h3>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-white text-2xl font-bold"
-            >
-              ×
-            </button>
+            <CloseButton aria-label="Close chat" size="md" onClick={() => setIsOpen(false)} />
           </div>
           
           {/* AI Feature Quick Access Buttons */}
