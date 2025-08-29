@@ -6,6 +6,16 @@ import { Box, Flex, VStack, Button, Icon } from '@chakra-ui/react';
 // Backgrounds for Dashboard page (light/dark) - use static imports for reliability
 import dashboardBg from '../assets/Page Backgrounds/layered-waves-haikei.png';
 import dashboardBgDark from '../assets/Page Backgrounds/DashboardDark.png';
+import journalBg from '../assets/Page Backgrounds/JournalLight.png';
+import journalBgDark from '../assets/Page Backgrounds/JournalDark.png';
+import moodBg from '../assets/Page Backgrounds/MoodLight.png';
+import moodBgDark from '../assets/Page Backgrounds/MoodDark.png';
+import activitiesBg from '../assets/Page Backgrounds/ActivitiesLight.png';
+import activitiesBgDark from '../assets/Page Backgrounds/ActivitiesDark.png';
+import progressBg from '../assets/Page Backgrounds/ProgressLight.png';
+import progressBgDark from '../assets/Page Backgrounds/ProgressDark.png';
+import reviewBg from '../assets/Page Backgrounds/ReviewLight.png';
+import reviewBgDark from '../assets/Page Backgrounds/ReviewDark.png';
 
 const navLinks = [
   { to: '/dashboard', label: 'Dashboard', icon: <FiHome /> },
@@ -22,8 +32,13 @@ const navLinks = [
 const Layout: React.FC = () => {
   const location = useLocation();
   const isDashboard = location.pathname === '/dashboard';
+  const isJournal = location.pathname.startsWith('/journal');
+  const isMood = location.pathname.startsWith('/mood');
+  const isActivities = location.pathname.startsWith('/activities');
+  const isProgress = location.pathname.startsWith('/progress');
+  const isReview = location.pathname.startsWith('/review');
   const [isDark, setIsDark] = useState<boolean>(typeof document !== 'undefined' ? document.documentElement.classList.contains('dark') : false);
-  const [resolvedBg, setResolvedBg] = useState<string>(dashboardBg);
+  const [resolvedBg, setResolvedBg] = useState<string>('');
   useEffect(() => {
     if (typeof document === 'undefined') return;
     const el = document.documentElement;
@@ -34,16 +49,35 @@ const Layout: React.FC = () => {
     return () => observer.disconnect();
   }, []);
 
+  // Decide which background set to use by route
+  const currentBgLight =
+    isDashboard ? dashboardBg :
+    isJournal ? journalBg :
+    isMood ? moodBg :
+    isActivities ? activitiesBg :
+    isProgress ? progressBg :
+    isReview ? reviewBg :
+    '';
+  const currentBgDark =
+    isDashboard ? dashboardBgDark :
+    isJournal ? journalBgDark :
+    isMood ? moodBgDark :
+    isActivities ? activitiesBgDark :
+    isProgress ? progressBgDark :
+    isReview ? reviewBgDark :
+    '';
+
   // Preload backgrounds and resolve the actual URL we will use (fallback to light if dark fails)
   useEffect(() => {
     let cancelled = false;
     const img = new Image();
-    const target = isDark ? dashboardBgDark : dashboardBg;
+    const target = isDark ? currentBgDark : currentBgLight;
+    if (!target) { setResolvedBg(''); return () => { cancelled = true; }; }
     img.onload = () => { if (!cancelled) setResolvedBg(target); };
-    img.onerror = () => { if (!cancelled) setResolvedBg(dashboardBg); };
+    img.onerror = () => { if (!cancelled) setResolvedBg(currentBgLight || ''); };
     img.src = target;
     return () => { cancelled = true; };
-  }, [isDark]);
+  }, [isDark, currentBgLight, currentBgDark]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Colors adapt via _dark overrides to respect app theme
@@ -61,7 +95,11 @@ const Layout: React.FC = () => {
         gap={2}
         transition="width 200ms ease"
         w={sidebarOpen ? '14rem' : '4rem'}
-        minH="100vh"
+        h="calc(100vh - 64px)"
+        position="sticky"
+        top="64px"
+        overflowY="auto"
+        zIndex={50}
       >
         {/* Hamburger */}
         <Flex align="center" justify="flex-start" mb={1} px={2} mt={0}>
@@ -108,9 +146,9 @@ const Layout: React.FC = () => {
         py={isDashboard ? 0 : 8}
         pt={isDashboard ? 16 : undefined}
         minH="100vh"
-        position={isDashboard ? 'relative' : undefined}
+        position={(isDashboard || isJournal || isMood || isActivities || isProgress || isReview) ? 'relative' : undefined}
       >
-        {isDashboard && (
+        {(isDashboard || isJournal || isMood || isActivities || isProgress || isReview) && resolvedBg && (
           <div
             className="absolute inset-0 z-0 bg-no-repeat bg-cover bg-center bg-fixed"
             style={{
@@ -122,7 +160,7 @@ const Layout: React.FC = () => {
             }}
           />
         )}
-        <div className={isDashboard ? 'relative z-10' : undefined}>
+        <div className={(isDashboard || isJournal || isMood || isActivities || isProgress || isReview) ? 'relative z-10' : undefined}>
           <Outlet />
         </div>
       </Box>

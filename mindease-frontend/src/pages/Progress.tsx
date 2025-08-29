@@ -246,11 +246,11 @@ const Progress = () => {
     } catch (error: any) {
       console.error('Error generating assessment:', error);
       let errorMessage = 'Failed to generate mental health assessment.';
-      if (error.response?.status === 404) {
+      if (error?.response?.status === 404) {
         errorMessage = 'Assessment feature is currently unavailable. Please contact support or try again later.';
-      } else if (error.response?.data?.error) {
+      } else if (error?.response?.data?.error) {
         errorMessage = error.response.data.error;
-      } else if (error.message) {
+      } else if (error?.message) {
         errorMessage = error.message;
       }
       toast.error(errorMessage);
@@ -261,377 +261,370 @@ const Progress = () => {
     }
   };
 
-  const resetAssessment = () => {
-    setAssessmentResult(null);
-    setAssessmentAnswers({});
-    setShowAssessment(true);
-  };
+const resetAssessment = () => {
+  setAssessmentResult(null);
+  setAssessmentAnswers({});
+  setShowAssessment(true);
+};
 
-  // Prepare chart data from real user data
-  const moodData: ChartData<'line'> = {
-    labels: stats.moodData.labels,
-    datasets: [
-      {
-        label: 'Mood Level',
-        data: stats.moodData.data,
-        borderColor: 'rgb(14, 165, 233)',
-        backgroundColor: 'rgba(14, 165, 233, 0.5)',
-        tension: 0.4,
-      },
-    ],
-  };
+// Prepare chart data from real user data
+const moodData: ChartData<'line'> = {
+  labels: stats.moodData.labels,
+  datasets: [
+    {
+      label: 'Mood Level',
+      data: stats.moodData.data,
+      borderColor: 'rgb(14, 165, 233)',
+      backgroundColor: 'rgba(14, 165, 233, 0.5)',
+      tension: 0.4,
+    },
+  ],
+};
 
-  const activityData: ChartData<'bar'> = {
-    labels: stats.activityData.labels,
-    datasets: [
-      {
-        label: 'Activities Completed',
-        data: stats.activityData.data,
-        backgroundColor: 'rgba(139, 92, 246, 0.5)',
-        borderColor: 'rgb(139, 92, 246)',
-        borderWidth: 1,
-      },
-    ],
-  };
+const activityData: ChartData<'bar'> = {
+  labels: stats.activityData.labels,
+  datasets: [
+    {
+      label: 'Activities Completed',
+      data: stats.activityData.data,
+      backgroundColor: 'rgba(139, 92, 246, 0.5)',
+      borderColor: 'rgb(139, 92, 246)',
+      borderWidth: 1,
+    },
+  ],
+};
 
-  const chartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-      },
-      tooltip: {
-        callbacks: {
-          label: function(context: any) {
-            const value = context.raw;
-            let moodLabel = 'Unknown';
-            
-            if (value >= 4.5) moodLabel = 'Very Happy';
-            else if (value >= 3.5) moodLabel = 'Happy';
-            else if (value >= 2.5) moodLabel = 'Neutral';
-            else if (value >= 1.5) moodLabel = 'Sad';
-            else if (value > 0) moodLabel = 'Very Sad';
-            
-            return `Mood: ${moodLabel} (${value})`;
+const chartOptions = {
+  responsive: true,
+  plugins: {
+    legend: {
+      position: 'top' as const,
+    },
+    tooltip: {
+      callbacks: {
+        label: function(context: any) {
+          const value = context.raw;
+          let moodLabel = 'Unknown';
+          
+          if (value >= 4.5) moodLabel = 'Very Happy';
+          else if (value >= 3.5) moodLabel = 'Happy';
+          else if (value >= 2.5) moodLabel = 'Neutral';
+          else if (value >= 1.5) moodLabel = 'Sad';
+          else if (value > 0) moodLabel = 'Very Sad';
+          
+          return `Mood: ${moodLabel} (${value})`;
+        }
+      }
+    }
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      max: 5,
+      ticks: {
+        stepSize: 1,
+        callback: function(tickValue: number | string) {
+          const value = Number(tickValue);
+          switch(value) {
+            case 5: return 'Very Happy';
+            case 4: return 'Happy';
+            case 3: return 'Neutral';
+            case 2: return 'Sad';
+            case 1: return 'Very Sad';
+            case 0: return '';
+            default: return '';
           }
         }
       }
     },
-    scales: {
-      y: {
-        beginAtZero: true,
-        max: 5,
-        ticks: {
-          stepSize: 1,
-          callback: function(tickValue: number | string) {
-            const value = Number(tickValue);
-            switch(value) {
-              case 5: return 'Very Happy';
-              case 4: return 'Happy';
-              case 3: return 'Neutral';
-              case 2: return 'Sad';
-              case 1: return 'Very Sad';
-              case 0: return '';
-              default: return '';
-            }
-          }
-        }
-      },
-    },
-  };
-
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  };
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500 mb-4"></div>
-        <p className="text-gray-600 dark:text-gray-400">Loading your progress data...</p>
-      </div>
-    );
-  }
-
-  if (!token) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full py-20">
-        <p className="text-xl mb-4">Please log in to view your progress</p>
-        <p className="text-gray-600 dark:text-gray-400">Your progress data will be tracked once you log in</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Your Progress</h1>
-      
-      {/* Mental Health Assessment Card */}
-      <div className="card bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
-        <div className="flex items-center mb-4">
-          <BiBrain className="w-6 h-6 mr-2" />
-          <h2 className="text-xl font-semibold">Mental Health Status</h2>
-        </div>
-        <p className="mb-4">
-          Take a quick assessment to understand your current mental health status and track changes over time.
-        </p>
-        
-        {!showAssessment && !assessmentResult && (
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center">
-            <button 
-              onClick={() => setShowAssessment(true)}
-              className="bg-white text-indigo-700 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 transition-colors mb-2 md:mb-0"
-            >
-              Start Assessment
-            </button>
-            
-            {assessmentHistory.length > 0 && (
-              <button 
-                onClick={() => setShowHistory(!showHistory)}
-                className="flex items-center text-white/90 hover:text-white underline"
-              >
-                {showHistory ? 'Hide history' : 'View past assessments'}
-                <FiChevronRight className={`ml-1 transform transition-transform ${showHistory ? 'rotate-90' : ''}`} />
-              </button>
-            )}
-          </div>
-        )}
-        
-        {/* Show assessment history */}
-        {showHistory && (
-          <div className="mt-4 bg-white/10 p-4 rounded-lg">
-            <h3 className="font-medium mb-2 text-lg">Assessment History</h3>
-            {assessmentHistory.length > 0 ? (
-              <div className="space-y-2">
-                {assessmentHistory.map((assessment) => (
-                  <div key={assessment.id} className="flex justify-between items-center p-2 bg-white/10 rounded">
-                    <span>{formatDate(assessment.date)}</span>
-                    <div className="flex items-center">
-                      <span 
-                        className={`inline-block w-3 h-3 rounded-full mr-2 ${
-                          assessment.scoreLevel === 'high' 
-                            ? 'bg-green-400' 
-                            : assessment.scoreLevel === 'moderate' 
-                              ? 'bg-yellow-400' 
-                              : 'bg-red-400'
-                        }`}
-                      ></span>
-                      <span>{assessment.score}/5</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-white/80">No assessment history available yet.</p>
-            )}
-          </div>
-        )}
-        
-        {/* Assessment Questions */}
-        {showAssessment && !assessmentResult && (
-          <div className="mt-4">
-            <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-medium mb-4 text-lg">Mental Health Assessment</h3>
-              <div className="space-y-4">
-                {assessmentQuestions.map(question => (
-                  <div key={question.id} className="mb-3">
-                    <label className="block mb-2">{question.text}</label>
-                    <div className="flex justify-between">
-                      <span className="text-xs">Not at all</span>
-                      <span className="text-xs">Extremely</span>
-                    </div>
-                    <div className="flex justify-between space-x-2">
-                      {[1, 2, 3, 4, 5].map(value => (
-                        <button
-                          key={value}
-                          className={`flex-1 py-2 rounded ${
-                            assessmentAnswers[question.id] === value 
-                              ? 'bg-white text-indigo-700 font-medium' 
-                              : 'bg-white/30 hover:bg-white/50'
-                          }`}
-                          onClick={() => handleAnswerChange(question.id, value)}
-                        >
-                          {value}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-6 flex justify-between">
-                <button
-                  onClick={() => setShowAssessment(false)}
-                  className="px-4 py-2 bg-white/30 rounded-lg hover:bg-white/40 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSubmitAssessment}
-                  className="px-4 py-2 bg-white text-indigo-700 rounded-lg font-medium hover:bg-indigo-100 transition-colors"
-                  disabled={assessmentLoading}
-                >
-                  {assessmentLoading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin w-4 h-4 border-2 border-indigo-700 border-t-transparent rounded-full mr-2"></div>
-                      Processing...
-                    </div>
-                  ) : 'Submit Assessment'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Assessment Results */}
-        {assessmentResult && (
-          <div className="mt-4">
-            <div className="bg-white/10 p-4 rounded-lg">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-medium text-lg">Your Results</h3>
-                <div className="flex items-center">
-                  <div className={`w-3 h-3 rounded-full mr-2 ${
-                    assessmentResult.scoreLevel === 'high' 
-                      ? 'bg-green-400' 
-                      : assessmentResult.scoreLevel === 'moderate' 
-                        ? 'bg-yellow-400' 
-                        : 'bg-red-400'
-                  }`}></div>
-                  <span className="font-medium">{assessmentResult.score}/5</span>
-                </div>
-              </div>
-              <p className="mb-4 text-white/90">{assessmentResult.analysis}</p>
-              <h4 className="font-medium mb-2">Suggested Activities:</h4>
-              <ul className="list-disc pl-5 mb-4 text-white/90">
-                {(assessmentResult.recommendations && assessmentResult.recommendations.length > 0
-                  ? assessmentResult.recommendations
-                  : (assessmentResult.score <= 2
-                      ? [
-                          'Try a guided meditation session',
-                          'Go for a short walk outdoors',
-                          'Write down three things you are grateful for'
-                        ]
-                      : assessmentResult.score <= 4
-                        ? [
-                            'Practice deep breathing exercises',
-                            'Connect with a friend or family member',
-                            'Take a mindful break during your day'
-                          ]
-                        : [
-                            'Keep up your positive habits!',
-                            'Share your good mood with someone',
-                            'Try a new activity for fun'
-                          ]
-                  )
-                ).map((rec: string, index: number) => (
-                  <li key={index}>{rec}</li>
-                ))}
-              </ul>
-              <div className="flex justify-between">
-                <button
-                  onClick={() => setAssessmentResult(null)}
-                  className="px-4 py-2 bg-white/30 rounded-lg hover:bg-white/40 transition-colors"
-                >
-                  Close
-                </button>
-                <button
-                  onClick={resetAssessment}
-                  className="px-4 py-2 bg-white text-indigo-700 rounded-lg font-medium hover:bg-indigo-100 transition-colors"
-                >
-                  Take New Assessment
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-      
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-primary-100 dark:bg-primary-900">
-              <FiTrendingUp className="w-6 h-6 text-primary-600 dark:text-primary-400" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Weekly Average</h2>
-              <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">
-                {stats.weeklyAverage.toFixed(1)}/5
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="card">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-secondary-100 dark:bg-secondary-900">
-              <FiAward className="w-6 h-6 text-secondary-600 dark:text-secondary-400" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Current Streak</h2>
-              <p className="text-2xl font-bold text-secondary-600 dark:text-secondary-400">
-                {stats.streak} days
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="card">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-green-100 dark:bg-green-900">
-              <FiCalendar className="w-6 h-6 text-green-600 dark:text-green-400" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Activities Completed</h2>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {stats.activitiesCompleted}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Mood Tracking Chart */}
-      <div className="card">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Mood Tracking</h2>
-        <div className="h-[300px]">
-          <Line data={moodData} options={chartOptions} />
-        </div>
-      </div>
-      
-      {/* Activity Completion Chart */}
-      <div className="card">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Activity Completion</h2>
-        <div className="h-[300px]">
-          <Bar data={activityData} options={chartOptions} />
-        </div>
-      </div>
-      
-      {/* Achievements */}
-      <div className="card">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Achievements</h2>
-        {stats.achievements.length > 0 ? (
-          <div className="space-y-4">
-            {stats.achievements.map((achievement, index) => (
-              <div key={index} className="flex items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="p-2 rounded-full bg-yellow-100 dark:bg-yellow-900">
-                  <span className="text-2xl">🏆</span>
-                </div>
-                <div className="ml-4">
-                  <h3 className="font-medium text-gray-900 dark:text-white">{achievement.title}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{achievement.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            <p>Complete more activities to earn achievements</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  },
 };
 
-export default Progress; 
+// Format date for display
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+};
+
+if (loading) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full py-20">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500 mb-4"></div>
+      <p className="text-gray-600 dark:text-gray-400">Loading your progress data...</p>
+    </div>
+  );
+}
+
+if (!token) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full py-20">
+      <p className="text-xl mb-4">Please log in to view your progress</p>
+      <p className="text-gray-600 dark:text-gray-400">Your progress data will be tracked once you log in</p>
+    </div>
+  );
+}
+
+return (
+  <div className="space-y-6">
+    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Your Progress</h1>
+
+    {/* Mental Health Assessment Card */}
+    <div className="card bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
+      <div className="flex items-center mb-4">
+        <BiBrain className="w-6 h-6 mr-2" />
+        <h2 className="text-xl font-semibold">Mental Health Status</h2>
+      </div>
+      <p className="mb-4">
+        Take a quick assessment to understand your current mental health status and track changes over time.
+      </p>
+
+      {!showAssessment && !assessmentResult && (
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+          <button
+            onClick={() => setShowAssessment(true)}
+            className="bg-white text-indigo-700 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 transition-colors mb-2 md:mb-0"
+          >
+            Start Assessment
+          </button>
+
+          {assessmentHistory.length > 0 && (
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="flex items-center text-white/90 hover:text-white underline"
+            >
+              {showHistory ? 'Hide history' : 'View past assessments'}
+              <FiChevronRight className={`ml-1 transform transition-transform ${showHistory ? 'rotate-90' : ''}`} />
+            </button>
+          )}
+        </div>
+      )}
+
+      {showHistory && (
+        <div className="mt-4 bg-white/10 p-4 rounded-lg">
+          <h3 className="font-medium mb-2 text-lg">Assessment History</h3>
+          {assessmentHistory.length > 0 ? (
+            <div className="space-y-2">
+              {assessmentHistory.map((assessment) => (
+                <div key={assessment.id} className="flex justify-between items-center p-2 bg-white/10 rounded">
+                  <span>{formatDate(assessment.date)}</span>
+                  <div className="flex items-center">
+                    <span
+                      className={`inline-block w-3 h-3 rounded-full mr-2 ${
+                        assessment.scoreLevel === 'high'
+                          ? 'bg-green-400'
+                          : assessment.scoreLevel === 'moderate'
+                            ? 'bg-yellow-400'
+                            : 'bg-red-400'
+                      }`}
+                    ></span>
+                    <span>{assessment.score}/5</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-white/80">No assessment history available yet.</p>
+          )}
+        </div>
+      )}
+
+      {showAssessment && !assessmentResult && (
+        <div className="mt-4">
+          <div className="bg-white/10 p-4 rounded-lg">
+            <h3 className="font-medium mb-4 text-lg">Mental Health Assessment</h3>
+            <div className="space-y-4">
+              {assessmentQuestions.map(question => (
+                <div key={question.id} className="mb-3">
+                  <label className="block mb-2">{question.text}</label>
+                  <div className="flex justify-between">
+                    <span className="text-xs">Not at all</span>
+                    <span className="text-xs">Extremely</span>
+                  </div>
+                  <div className="flex justify-between space-x-2">
+                    {[1, 2, 3, 4, 5].map(value => (
+                      <button
+                        key={value}
+                        className={`flex-1 py-2 rounded ${
+                          assessmentAnswers[question.id] === value
+                            ? 'bg-white text-indigo-700 font-medium'
+                            : 'bg-white/30 hover:bg-white/50'
+                        }`}
+                        onClick={() => handleAnswerChange(question.id, value)}
+                      >
+                        {value}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 flex justify-between">
+              <button
+                onClick={() => setShowAssessment(false)}
+                className="px-4 py-2 bg-white/30 rounded-lg hover:bg-white/40 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitAssessment}
+                className="px-4 py-2 bg-white text-indigo-700 rounded-lg font-medium hover:bg-indigo-100 transition-colors"
+                disabled={assessmentLoading}
+              >
+                {assessmentLoading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin w-4 h-4 border-2 border-indigo-700 border-t-transparent rounded-full mr-2"></div>
+                    Processing...
+                  </div>
+                ) : 'Submit Assessment'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {assessmentResult && (
+        <div className="mt-4">
+          <div className="bg-white/10 p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-medium text-lg">Your Results</h3>
+              <div className="flex items-center">
+                <div className={`w-3 h-3 rounded-full mr-2 ${
+                  assessmentResult.scoreLevel === 'high'
+                    ? 'bg-green-400'
+                    : assessmentResult.scoreLevel === 'moderate'
+                      ? 'bg-yellow-400'
+                      : 'bg-red-400'
+                }`}></div>
+                <span className="font-medium">{assessmentResult.score}/5</span>
+              </div>
+            </div>
+            <p className="mb-4 text-white/90">{assessmentResult.analysis}</p>
+            <h4 className="font-medium mb-2">Suggested Activities:</h4>
+            <ul className="list-disc pl-5 mb-4 text-white/90">
+              {(assessmentResult.recommendations && assessmentResult.recommendations.length > 0
+                ? assessmentResult.recommendations
+                : (assessmentResult.score <= 2
+                    ? [
+                        'Try a guided meditation session',
+                        'Go for a short walk outdoors',
+                        'Write down three things you are grateful for'
+                      ]
+                    : assessmentResult.score <= 4
+                      ? [
+                          'Practice deep breathing exercises',
+                          'Connect with a friend or family member',
+                          'Take a mindful break during your day'
+                        ]
+                      : [
+                          'Keep up your positive habits!',
+                          'Share your good mood with someone',
+                          'Try a new activity for fun'
+                        ]
+              )
+              ).map((rec: string, index: number) => (
+                <li key={index}>{rec}</li>
+              ))}
+            </ul>
+            <div className="flex justify-between">
+              <button
+                onClick={() => setAssessmentResult(null)}
+                className="px-4 py-2 bg-white/30 rounded-lg hover:bg-white/40 transition-colors"
+              >
+                Close
+              </button>
+              <button
+                onClick={resetAssessment}
+                className="px-4 py-2 bg-white text-indigo-700 rounded-lg font-medium hover:bg-indigo-100 transition-colors"
+              >
+                Take New Assessment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+
+    {/* Stats Overview */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="card bg-white/70 dark:bg-gray-900/40 backdrop-blur-sm border border-white/60 dark:border-white/10">
+        <div className="flex items-center">
+          <div className="p-3 rounded-lg bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-300 mr-4">
+            <FiTrendingUp className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Weekly Mood Avg</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.weeklyAverage.toFixed(1)}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="card bg-white/70 dark:bg-gray-900/40 backdrop-blur-sm border border-white/60 dark:border-white/10">
+        <div className="flex items-center">
+          <div className="p-3 rounded-lg bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 mr-4">
+            <FiCalendar className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Current Streak</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.streak} days</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="card bg-white/70 dark:bg-gray-900/40 backdrop-blur-sm border border-white/60 dark:border-white/10">
+        <div className="flex items-center">
+          <div className="p-3 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-300 mr-4">
+            <FiAward className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Activities Completed</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.activitiesCompleted}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Mood Tracking */}
+    <div className="card bg-white/70 dark:bg-gray-900/40 backdrop-blur-sm border border-white/60 dark:border-white/10">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Mood Tracking</h2>
+      <div className="h-[300px]">
+        <Line data={moodData} options={chartOptions} />
+      </div>
+    </div>
+
+    {/* Activity Completion */}
+    <div className="card bg-white/70 dark:bg-gray-900/40 backdrop-blur-sm border border-white/60 dark:border-white/10">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Activity Completion</h2>
+      <div className="h-[300px]">
+        <Bar data={activityData} options={chartOptions} />
+      </div>
+    </div>
+
+    {/* Recent Achievements */}
+    <div className="card bg-white/70 dark:bg-gray-900/40 backdrop-blur-sm border border-white/60 dark:border-white/10">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Achievements</h2>
+      {stats.achievements.length > 0 ? (
+        <div className="space-y-4">
+          {stats.achievements.map((achievement) => (
+            <div key={achievement.id} className="flex items-center">
+              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-300">
+                <FiAward className="w-5 h-5" />
+              </div>
+              <div className="ml-4">
+                <h3 className="font-medium text-gray-900 dark:text-white">{achievement.title}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{achievement.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <p>Complete more activities to earn achievements</p>
+        </div>
+      )}
+    </div>
+  </div>
+);
+};
+
+export default Progress;
