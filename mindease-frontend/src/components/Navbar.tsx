@@ -33,9 +33,14 @@ const Navbar: React.FC = () => {
         {/* Left: Logo and App Name */}
         <Link to="/" style={{ textDecoration: 'none' }}>
           <Flex align="center" gap={2} ml={0} pl={0}>
-            <img src={mindeaseLogo} alt="MindEase Logo" style={{ height: 32, width: 32 }} />
+            <img
+              src={mindeaseLogo}
+              alt="ZenPath Logo"
+              className="transition-transform duration-300 ease-out hover:-translate-y-0.5 hover:rotate-3 hover:drop-shadow-md"
+              style={{ height: 32, width: 32 }}
+            />
             <Text fontSize="xl" fontWeight="bold" className="text-accent-600 dark:text-accent-400">
-              MindEase
+              ZenPath
             </Text>
           </Flex>
         </Link>

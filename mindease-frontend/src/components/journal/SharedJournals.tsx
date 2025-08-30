@@ -95,7 +95,7 @@ const SharedJournals: React.FC<SharedJournalsProps> = ({ refreshFlag }) => {
           const style = getRandomAvatarStyle(entry.user._id || entry.user.name);
           return (
           <Grid item xs={12} md={6} key={entry._id}>
-            <Card className="bg-white/90 dark:bg-gray-900/90 border-0 rounded-2xl shadow-lg p-2">
+            <Card className="bg-white/90 dark:bg-black/60 border border-transparent dark:border-white/10 rounded-2xl shadow-lg p-2 backdrop-blur-sm">
               <CardContent className="p-4">
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <div style={{ marginRight: 8 }}>

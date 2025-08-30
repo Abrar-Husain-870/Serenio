@@ -22,13 +22,13 @@ const Journal: React.FC = () => {
         Journal
       </Heading>
 
-      <Tabs.Root value={tabValue} onValueChange={handleTabChange} variant="unstyled">
+      <Tabs.Root value={tabValue} onValueChange={handleTabChange} variant="plain">
         <Tabs.List
           mb={5}
           px={1}
           py={1}
           rounded="xl"
-          className="inline-flex bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+          className="inline-flex bg-gray-100 dark:bg-black/60 backdrop-blur-sm border border-gray-200 dark:border-white/10"
         >
           <Tabs.Trigger
             value="my"
@@ -43,7 +43,7 @@ const Journal: React.FC = () => {
             textDecoration="none"
             borderBottom="none"
             outline="none"
-            _hover={{ bg: 'gray.200', _dark: { bg: 'gray.700' } }}
+            _hover={{ bg: 'gray.200', _dark: { bg: 'blackAlpha.600' } }}
             _selected={{
               bg: 'linear-gradient(90deg, #6366f1 0%, #60a5fa 100%)',
               color: 'white',
@@ -66,7 +66,7 @@ const Journal: React.FC = () => {
             textDecoration="none"
             borderBottom="none"
             outline="none"
-            _hover={{ bg: 'gray.200', _dark: { bg: 'gray.700' } }}
+            _hover={{ bg: 'gray.200', _dark: { bg: 'blackAlpha.600' } }}
             _selected={{
               bg: 'linear-gradient(90deg, #6366f1 0%, #60a5fa 100%)',
               color: 'white',

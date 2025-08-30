@@ -1,6 +1,7 @@
 import React, { useState, Fragment } from 'react';
 import { FiInfo, FiBookOpen, FiBriefcase, FiUsers, FiHeart, FiExternalLink } from 'react-icons/fi';
 import { Card, Accordion, Highlight, Mark, useHighlight } from '@chakra-ui/react';
+import CountUp from '../reactbits components/CountUp';
 
 interface Resource {
   id: string;
@@ -191,15 +192,24 @@ const Awareness: React.FC = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
           <div className="text-center p-4 bg-white/10 rounded-lg">
-            <p className="text-2xl font-bold">1 in 5</p>
+            <p className="text-2xl font-bold">
+              <CountUp from={0} to={1} duration={1.2} className="inline" />
+              <span className="mx-1">in</span>
+              5
+            </p>
             <p className="text-sm">Adults experience mental illness each year</p>
           </div>
           <div className="text-center p-4 bg-white/10 rounded-lg">
-            <p className="text-2xl font-bold">50%</p>
+            <p className="text-2xl font-bold">
+              <CountUp from={0} to={50} duration={1.2} delay={0.15} className="inline" />%
+            </p>
             <p className="text-sm">Mental health conditions begin by age 14</p>
           </div>
           <div className="text-center p-4 bg-white/10 rounded-lg">
-            <p className="text-2xl font-bold">300 Million+</p>
+            <p className="text-2xl font-bold">
+              <CountUp from={0} to={300} duration={1.4} delay={0.3} separator="," className="inline" />
+              <span className="ml-1">Million+</span>
+            </p>
             <p className="text-sm">People worldwide suffer from depression</p>
           </div>
         </div>

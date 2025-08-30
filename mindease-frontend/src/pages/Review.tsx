@@ -109,11 +109,11 @@ const Review: React.FC = () => {
           <h2 className="text-xl font-semibold">Thought for Today</h2>
         </div>
         <div className="py-4">
-          <Blockquote.Root variant="plain" colorPalette="teal" justify="center">
+          <Blockquote.Root variant="plain" justify="center">
             <Float placement="top-start" offsetY="2">
-              <Blockquote.Icon />
+              <Blockquote.Icon className="text-white opacity-90" style={{ fontSize: '2.25rem' }} />
             </Float>
-            <Blockquote.Content cite="https://">
+            <Blockquote.Content cite="https://" className="text-white">
               {quote}
             </Blockquote.Content>
           </Blockquote.Root>

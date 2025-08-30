@@ -102,9 +102,10 @@ const JournalList: React.FC<JournalListProps> = ({ entries = [], refreshFlag }) 
                 border: '1px solid #e2e8f0',
                 minWidth: 0,
                 '.dark &': {
-                  background: '#232b39',
+                  background: 'rgba(0,0,0,0.5)',
+                  backdropFilter: 'blur(6px)',
                   boxShadow: '0 2px 12px 0 rgba(0,0,0,0.30)',
-                  border: '1px solid transparent',
+                  border: '1px solid rgba(255,255,255,0.10)',
                 },
               }}
             >

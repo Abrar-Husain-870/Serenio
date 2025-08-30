@@ -103,49 +103,53 @@ const MoodTracker: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">How are you feeling today?</h1>
+    <div className="min-h-screen">
+      <div className="max-w-5xl mx-auto py-10 px-4 space-y-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">How are you feeling today?</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Mood Selection */}
         <div className="card">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Select your mood</h2>
-          <div className="flex space-x-4 mb-4">
+          <div className="grid grid-cols-3 gap-6 w-fit mx-auto mb-2 place-items-center">
             <button
               type="button"
-              className={`btn flex-1 py-2 px-4 rounded ${
+              aria-pressed={mood === 'happy'}
+              className={`focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 rounded-full w-24 h-24 md:w-28 md:h-28 flex flex-col items-center justify-center transition-colors ${
                 mood === 'happy'
-                  ? 'bg-green-500 text-white'
-                  : 'bg-gray-200 text-gray-700'
+                  ? 'bg-green-500 text-white shadow'
+                  : 'bg-gray-200 text-gray-700 dark:bg-black/40 dark:text-gray-200 border border-white/60 dark:border-white/10'
               }`}
               onClick={() => setMood('happy')}
             >
-              <FiSmile className="inline-block mr-2" />
-              Happy
+              <FiSmile className="w-7 h-7 md:w-8 md:h-8" />
+              <span className="mt-1 text-sm font-medium">Happy</span>
             </button>
             <button
               type="button"
-              className={`btn flex-1 py-2 px-4 rounded ${
+              aria-pressed={mood === 'neutral'}
+              className={`focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 rounded-full w-24 h-24 md:w-28 md:h-28 flex flex-col items-center justify-center transition-colors ${
                 mood === 'neutral'
-                  ? 'bg-yellow-500 text-white'
-                  : 'bg-gray-200 text-gray-700'
+                  ? 'bg-yellow-500 text-white shadow'
+                  : 'bg-gray-200 text-gray-700 dark:bg-black/40 dark:text-gray-200 border border-white/60 dark:border-white/10'
               }`}
               onClick={() => setMood('neutral')}
             >
-              <FiMeh className="inline-block mr-2" />
-              Neutral
+              <FiMeh className="w-7 h-7 md:w-8 md:h-8" />
+              <span className="mt-1 text-sm font-medium">Neutral</span>
             </button>
             <button
               type="button"
-              className={`btn flex-1 py-2 px-4 rounded ${
+              aria-pressed={mood === 'sad'}
+              className={`focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-full w-24 h-24 md:w-28 md:h-28 flex flex-col items-center justify-center transition-colors ${
                 mood === 'sad'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-200 text-gray-700'
+                  ? 'bg-blue-500 text-white shadow'
+                  : 'bg-gray-200 text-gray-700 dark:bg-black/40 dark:text-gray-200 border border-white/60 dark:border-white/10'
               }`}
               onClick={() => setMood('sad')}
             >
-              <FiFrown className="inline-block mr-2" />
-              Sad
+              <FiFrown className="w-7 h-7 md:w-8 md:h-8" />
+              <span className="mt-1 text-sm font-medium">Sad</span>
             </button>
           </div>
         </div>
@@ -223,6 +227,7 @@ const MoodTracker: React.FC = () => {
             })}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

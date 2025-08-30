@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { FiTrendingUp, FiAward, FiCalendar, FiChevronRight } from 'react-icons/fi';
+import GlassIcons from '../reactbits components/GlassIcons';
 import { BiBrain } from 'react-icons/bi';
 import {
   Chart as ChartJS,
@@ -18,6 +19,7 @@ import { useAppSelector } from '../store/hooks';
 import { toast } from 'react-toastify';
 import axiosInstance from '../utils/api';
 import { useLocation } from 'react-router-dom';
+import { applyCalmChartDefaults } from '../utils/chartDefaults';
 
 ChartJS.register(
   CategoryScale,
@@ -29,6 +31,9 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
+// Apply chart defaults once
+applyCalmChartDefaults();
 
 // Define interface for assessment history
 interface AssessmentHistory {
@@ -274,9 +279,10 @@ const moodData: ChartData<'line'> = {
     {
       label: 'Mood Level',
       data: stats.moodData.data,
-      borderColor: 'rgb(14, 165, 233)',
-      backgroundColor: 'rgba(14, 165, 233, 0.5)',
-      tension: 0.4,
+      borderColor: 'rgb(59, 130, 246)', // brand-strong (blue-500/600)
+      backgroundColor: 'rgba(59, 130, 246, 0.15)',
+      pointBackgroundColor: 'rgb(59, 130, 246)',
+      tension: 0.35,
     },
   ],
 };
@@ -297,9 +303,7 @@ const activityData: ChartData<'bar'> = {
 const chartOptions = {
   responsive: true,
   plugins: {
-    legend: {
-      position: 'top' as const,
-    },
+    legend: { display: false },
     tooltip: {
       callbacks: {
         label: function(context: any) {
@@ -335,8 +339,10 @@ const chartOptions = {
             default: return '';
           }
         }
-      }
+      },
+      grid: { color: 'rgba(148, 163, 184, 0.2)' }, // muted gridlines
     },
+    x: { grid: { color: 'rgba(148, 163, 184, 0.12)' } },
   },
 };
 
@@ -345,6 +351,13 @@ const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 };
+
+// Glass icons items for stats overview
+const glassItemsFor = (weeklyAverage: number, streak: number, activitiesCompleted: number) => ([
+  { icon: <FiTrendingUp />, color: 'blue', label: `Weekly Mood Avg: ${weeklyAverage.toFixed(1)}` },
+  { icon: <FiCalendar />, color: 'purple', label: `Current Streak: ${streak} days` },
+  { icon: <FiAward />, color: 'green', label: `Activities Completed: ${activitiesCompleted}` },
+]);
 
 if (loading) {
   return (
@@ -405,7 +418,7 @@ return (
           {assessmentHistory.length > 0 ? (
             <div className="space-y-2">
               {assessmentHistory.map((assessment) => (
-                <div key={assessment.id} className="flex justify-between items-center p-2 bg-white/10 rounded">
+                <div key={assessment.id} className="flex justify-between items-center p-2 bg-white/10 dark:bg-black/40 rounded">
                   <span>{formatDate(assessment.date)}</span>
                   <div className="flex items-center">
                     <span
@@ -430,7 +443,7 @@ return (
 
       {showAssessment && !assessmentResult && (
         <div className="mt-4">
-          <div className="bg-white/10 p-4 rounded-lg">
+          <div className="bg-white/10 dark:bg-black/40 p-4 rounded-lg">
             <h3 className="font-medium mb-4 text-lg">Mental Health Assessment</h3>
             <div className="space-y-4">
               {assessmentQuestions.map(question => (
@@ -447,7 +460,7 @@ return (
                         className={`flex-1 py-2 rounded ${
                           assessmentAnswers[question.id] === value
                             ? 'bg-white text-indigo-700 font-medium'
-                            : 'bg-white/30 hover:bg-white/50'
+                            : 'bg-white/30 hover:bg-white/50 dark:bg-black/30 dark:hover:bg-black/40'
                         }`}
                         onClick={() => handleAnswerChange(question.id, value)}
                       >
@@ -462,7 +475,7 @@ return (
             <div className="mt-6 flex justify-between">
               <button
                 onClick={() => setShowAssessment(false)}
-                className="px-4 py-2 bg-white/30 rounded-lg hover:bg-white/40 transition-colors"
+                className="px-4 py-2 bg-white/30 dark:bg-black/30 rounded-lg hover:bg-white/40 dark:hover:bg-black/40 transition-colors"
               >
                 Cancel
               </button>
@@ -485,7 +498,7 @@ return (
 
       {assessmentResult && (
         <div className="mt-4">
-          <div className="bg-white/10 p-4 rounded-lg">
+          <div className="bg-white/10 dark:bg-black/40 p-4 rounded-lg">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-medium text-lg">Your Results</h3>
               <div className="flex items-center">
@@ -529,7 +542,7 @@ return (
             <div className="flex justify-between">
               <button
                 onClick={() => setAssessmentResult(null)}
-                className="px-4 py-2 bg-white/30 rounded-lg hover:bg-white/40 transition-colors"
+                className="px-4 py-2 bg-white/30 dark:bg-black/30 rounded-lg hover:bg-white/40 dark:hover:bg-black/40 transition-colors"
               >
                 Close
               </button>
@@ -545,69 +558,49 @@ return (
       )}
     </div>
 
-    {/* Stats Overview */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="card bg-white/70 dark:bg-gray-900/40 backdrop-blur-sm border border-white/60 dark:border-white/10">
-        <div className="flex items-center">
-          <div className="p-3 rounded-lg bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-300 mr-4">
-            <FiTrendingUp className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Weekly Mood Avg</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.weeklyAverage.toFixed(1)}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="card bg-white/70 dark:bg-gray-900/40 backdrop-blur-sm border border-white/60 dark:border-white/10">
-        <div className="flex items-center">
-          <div className="p-3 rounded-lg bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 mr-4">
-            <FiCalendar className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Current Streak</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.streak} days</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="card bg-white/70 dark:bg-gray-900/40 backdrop-blur-sm border border-white/60 dark:border-white/10">
-        <div className="flex items-center">
-          <div className="p-3 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-300 mr-4">
-            <FiAward className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Activities Completed</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.activitiesCompleted}</p>
-          </div>
-        </div>
-      </div>
+    {/* Stats Overview using GlassIcons */}
+    <div>
+      <GlassIcons layout="side" items={glassItemsFor(stats.weeklyAverage, stats.streak, stats.activitiesCompleted)} />
     </div>
 
     {/* Mood Tracking */}
-    <div className="card bg-white/70 dark:bg-gray-900/40 backdrop-blur-sm border border-white/60 dark:border-white/10">
+    <div className="card bg-white/70 dark:bg-black/50 backdrop-blur-sm border border-white/60 dark:border-white/10">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Mood Tracking</h2>
-      <div className="h-[300px]">
-        <Line data={moodData} options={chartOptions} />
-      </div>
+      {stats.moodData.data.length >= 2 ? (
+        <div className="h-[300px]">
+          <Line data={moodData} options={chartOptions} />
+        </div>
+      ) : (
+        <div className="text-center py-10 text-gray-600 dark:text-gray-400">
+          <p className="mb-2 font-medium">Not enough data to show your mood trend yet.</p>
+          <p className="text-sm">Log your mood for a couple of days to see insights and patterns.</p>
+        </div>
+      )}
     </div>
 
     {/* Activity Completion */}
-    <div className="card bg-white/70 dark:bg-gray-900/40 backdrop-blur-sm border border-white/60 dark:border-white/10">
+    <div className="card bg-white/70 dark:bg-black/50 backdrop-blur-sm border border-white/60 dark:border-white/10">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Activity Completion</h2>
-      <div className="h-[300px]">
-        <Bar data={activityData} options={chartOptions} />
-      </div>
+      {stats.activityData.data.some(v => v > 0) ? (
+        <div className="h-[300px]">
+          <Bar data={activityData} options={chartOptions} />
+        </div>
+      ) : (
+        <div className="text-center py-10 text-gray-600 dark:text-gray-400">
+          <p className="mb-2 font-medium">No activities completed yet.</p>
+          <p className="text-sm">Try one of today’s suggested activities to get started.</p>
+        </div>
+      )}
     </div>
 
     {/* Recent Achievements */}
-    <div className="card bg-white/70 dark:bg-gray-900/40 backdrop-blur-sm border border-white/60 dark:border-white/10">
+    <div className="card bg-white/70 dark:bg-black/50 backdrop-blur-sm border border-white/60 dark:border-white/10">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Achievements</h2>
       {stats.achievements.length > 0 ? (
         <div className="space-y-4">
           {stats.achievements.map((achievement) => (
             <div key={achievement.id} className="flex items-center">
-              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-300">
+              <div className="p-2 rounded-lg bg-amber-100 dark:bg-black/40 text-amber-600 dark:text-amber-300">
                 <FiAward className="w-5 h-5" />
               </div>
               <div className="ml-4">

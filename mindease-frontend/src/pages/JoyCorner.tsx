@@ -9,6 +9,8 @@ import DrawingCanvas from '../components/joy/DrawingCanvas';
 import UpliftingContentComponent from '../components/joy/UpliftingContent';
 import axiosInstance from '../utils/api';
 import { toast } from 'react-toastify';
+import StarBorder from '../reactbits components/StarBorder';
+import GlareHover from '../reactbits components/GlareHover';
 
 // Emoji celebration component
 const EmojiCelebration = () => {
@@ -122,82 +124,151 @@ const MiniGames = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Memory Game Card */}
-        <Card.Root variant="elevated" overflow="hidden" borderRadius="lg" shadow="md">
-          <Card.Body p={0}>
-            <div
-              className="w-full h-40 flex items-center justify-center"
-              style={{
-                backgroundImage: 'linear-gradient(to right, var(--tw-gradient-from, #ec4899), var(--tw-gradient-to, #a855f7))',
-                backgroundColor: '#ec4899'
-              }}
-            >
-              <FiCommand className="text-white" size={64} />
-            </div>
-          </Card.Body>
-          <Card.Body>
-            <Heading size="md" className="text-gray-900 dark:text-white">Memory Match</Heading>
-            <Text className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-              Test your memory by matching pairs of cards
-            </Text>
-            <button 
-              className="btn btn-primary mt-4 w-full"
-              onClick={() => handleGameSelect('memory')}
-            >
-              Play Now
-            </button>
-          </Card.Body>
-        </Card.Root>
+        <GlareHover
+          width="100%"
+          height="100%"
+          background="transparent"
+          borderRadius="16px"
+          borderColor="transparent"
+          glareColor="#ffffff"
+          glareOpacity={0.35}
+          glareAngle={-45}
+          glareSize={180}
+          className="rounded-2xl overflow-hidden h-full w-full"
+        >
+          <StarBorder
+            as="div"
+            className="w-full h-full rounded-2xl"
+            color="#ec4899"
+            speed="10s"
+            thickness={0}
+            delay="0s"
+            contentClassName="star-border-inner-reset"
+          >
+            <Card.Root variant="elevated" overflow="hidden" borderRadius="lg" shadow="md" className="h-full card-spotlight">
+              <Card.Body p={0}>
+                <div
+                  className="w-full h-40 flex items-center justify-center"
+                  style={{
+                    backgroundImage: 'linear-gradient(to right, var(--tw-gradient-from, #ec4899), var(--tw-gradient-to, #a855f7))',
+                    backgroundColor: '#ec4899'
+                  }}
+                >
+                  <FiCommand className="text-white" size={64} />
+                </div>
+              </Card.Body>
+              <Card.Body>
+                <Heading size="md" className="text-gray-900 dark:text-white">Memory Match</Heading>
+                <Text className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+                  Test your memory by matching pairs of cards
+                </Text>
+                <button 
+                  className="btn btn-primary mt-4 w-full"
+                  onClick={() => handleGameSelect('memory')}
+                >
+                  Play Now
+                </button>
+              </Card.Body>
+            </Card.Root>
+          </StarBorder>
+        </GlareHover>
         
         {/* Word Puzzle Card */}
-        <Card.Root variant="elevated" overflow="hidden" borderRadius="lg" shadow="md">
-          <Card.Body p={0}>
-            <div
-              className="w-full h-40 flex items-center justify-center"
-              style={{
-                backgroundImage: 'linear-gradient(to right, #3b82f6, #06b6d4)',
-                backgroundColor: '#3b82f6'
-              }}
-            >
-              <FiCommand className="text-white" size={64} />
-            </div>
-          </Card.Body>
-          <Card.Body>
-            <Heading size="md" className="text-gray-900 dark:text-white">Word Jumble</Heading>
-            <Text className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-              Unscramble the words to complete the puzzle
-            </Text>
-            <button 
-              className="btn btn-primary mt-4 w-full"
-              onClick={() => handleGameSelect('wordjumble')}
-            >
-              Play Now
-            </button>
-          </Card.Body>
-        </Card.Root>
+        <GlareHover
+          width="100%"
+          height="100%"
+          background="transparent"
+          borderRadius="16px"
+          borderColor="transparent"
+          glareColor="#ffffff"
+          glareOpacity={0.35}
+          glareAngle={-45}
+          glareSize={180}
+          className="rounded-2xl overflow-hidden h-full w-full"
+        >
+          <StarBorder
+            as="div"
+            className="w-full h-full rounded-2xl"
+            color="#3b82f6"
+            speed="10s"
+            thickness={0}
+            delay="2s"
+            contentClassName="star-border-inner-reset"
+          >
+            <Card.Root variant="elevated" overflow="hidden" borderRadius="lg" shadow="md" className="h-full card-spotlight">
+              <Card.Body p={0}>
+                <div
+                  className="w-full h-40 flex items-center justify-center"
+                  style={{
+                    backgroundImage: 'linear-gradient(to right, #3b82f6, #06b6d4)',
+                    backgroundColor: '#3b82f6'
+                  }}
+                >
+                  <FiCommand className="text-white" size={64} />
+                </div>
+              </Card.Body>
+              <Card.Body>
+                <Heading size="md" className="text-gray-900 dark:text-white">Word Jumble</Heading>
+                <Text className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+                  Unscramble the words to complete the puzzle
+                </Text>
+                <button 
+                  className="btn btn-primary mt-4 w-full"
+                  onClick={() => handleGameSelect('wordjumble')}
+                >
+                  Play Now
+                </button>
+              </Card.Body>
+            </Card.Root>
+          </StarBorder>
+        </GlareHover>
         
         {/* Coming Soon Card */}
-        <Card.Root variant="elevated" overflow="hidden" borderRadius="lg" shadow="md" className="opacity-90">
-          <Card.Body p={0}>
-            <div
-              className="w-full h-40 flex items-center justify-center"
-              style={{
-                backgroundImage: 'linear-gradient(to right, #fb923c, #ec4899)',
-                backgroundColor: '#fb923c'
-              }}
-            >
-              <FiStar className="text-white" size={64} />
-            </div>
-          </Card.Body>
-          <Card.Body>
-            <Heading size="md" className="text-gray-900 dark:text-white">Coming Soon</Heading>
-            <Text className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-              More games are on the way!
-            </Text>
-            <button className="btn btn-secondary mt-4 w-full" disabled>
-              Coming Soon
-            </button>
-          </Card.Body>
-        </Card.Root>
+        <GlareHover
+          width="100%"
+          height="100%"
+          background="transparent"
+          borderRadius="16px"
+          borderColor="transparent"
+          glareColor="#ffffff"
+          glareOpacity={0.35}
+          glareAngle={-45}
+          glareSize={180}
+          className="rounded-2xl overflow-hidden h-full w-full"
+        >
+          <StarBorder
+            as="div"
+            className="w-full h-full rounded-2xl"
+            color="#fb923c"
+            speed="10s"
+            thickness={0}
+            delay="4s"
+            contentClassName="star-border-inner-reset"
+          >
+            <Card.Root variant="elevated" overflow="hidden" borderRadius="lg" shadow="md" className="opacity-90 h-full card-spotlight">
+              <Card.Body p={0}>
+                <div
+                  className="w-full h-40 flex items-center justify-center"
+                  style={{
+                    backgroundImage: 'linear-gradient(to right, #fb923c, #ec4899)',
+                    backgroundColor: '#fb923c'
+                  }}
+                >
+                  <FiStar className="text-white" size={64} />
+                </div>
+              </Card.Body>
+              <Card.Body>
+                <Heading size="md" className="text-gray-900 dark:text-white">Coming Soon</Heading>
+                <Text className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+                  More games are on the way!
+                </Text>
+                <button className="btn btn-secondary mt-4 w-full" disabled>
+                  Coming Soon
+                </button>
+              </Card.Body>
+            </Card.Root>
+          </StarBorder>
+        </GlareHover>
       </div>
     </div>
   );

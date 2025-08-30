@@ -62,7 +62,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ onEntryCreated }) => {
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} className="space-y-4 font-sans text-base text-gray-900 dark:text-gray-100 max-w-xl mx-auto p-6 rounded-2xl shadow-lg bg-white/80 dark:bg-gray-900/80">
+    <Box component="form" onSubmit={handleSubmit} className="space-y-4 font-sans text-base text-gray-900 dark:text-gray-100 max-w-xl mx-auto p-6 rounded-2xl shadow-lg bg-white/80 dark:bg-black/60 border border-transparent dark:border-white/10 backdrop-blur-sm">
       <Typography variant="h6" component="h2" gutterBottom className="font-bold text-2xl text-gray-900 dark:text-gray-100 mb-4">
         New Journal Entry
       </Typography>
@@ -82,6 +82,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ onEntryCreated }) => {
             color: '#0f172a',
             boxShadow: '0 2px 8px 0 rgba(0,0,0,0.04)',
             fontFamily: 'inherit',
+            backdropFilter: 'blur(6px)'
           },
           '& .MuiInputBase-input': {
             color: '#0f172a',
@@ -95,17 +96,18 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ onEntryCreated }) => {
             borderColor: '#cbd5e1',
           },
           ':where(.dark) & .MuiInputBase-root, .dark & .MuiInputBase-root': {
-            backgroundColor: '#22304a !important',
+            backgroundColor: 'rgba(0,0,0,0.6) !important',
             color: '#f3f4f6 !important',
+            border: '1px solid rgba(255,255,255,0.12)',
           },
           ':where(.dark) & .MuiInputBase-input, .dark & .MuiInputBase-input': {
             color: '#f3f4f6 !important',
           },
           ':where(.dark) & .MuiInputBase-input::placeholder, .dark & .MuiInputBase-input::placeholder': {
-            color: '#a0aec0 !important',
+            color: '#cbd5e1 !important',
           },
           ':where(.dark) & .MuiOutlinedInput-notchedOutline, .dark & .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#334155 !important',
+            borderColor: 'rgba(255,255,255,0.12) !important',
           },
           '&:hover .MuiOutlinedInput-notchedOutline': {
             borderColor: '#60a5fa',
@@ -126,6 +128,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ onEntryCreated }) => {
             color: '#0f172a',
             boxShadow: '0 2px 8px 0 rgba(0,0,0,0.04)',
             fontFamily: 'inherit',
+            backdropFilter: 'blur(6px)'
           },
           '& .MuiInputBase-input': {
             color: '#0f172a',
@@ -139,17 +142,18 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ onEntryCreated }) => {
             borderColor: '#cbd5e1',
           },
           '.dark & .MuiInputBase-root': {
-            backgroundColor: '#22304a',
+            backgroundColor: 'rgba(0,0,0,0.6)',
             color: '#f3f4f6',
+            border: '1px solid rgba(255,255,255,0.12)'
           },
           '.dark & .MuiInputBase-input': {
             color: '#f3f4f6',
           },
           '.dark & .MuiInputBase-input::placeholder': {
-            color: '#a0aec0',
+            color: '#cbd5e1',
           },
           '.dark & .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#334155',
+            borderColor: 'rgba(255,255,255,0.12)',
           },
           '&:hover .MuiOutlinedInput-notchedOutline': {
             borderColor: '#60a5fa',

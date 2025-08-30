@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { FiSmile, FiBook, FiActivity, FiTrendingUp, FiCalendar } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../utils/api';
+import SplitText from '../reactbits components/SplitText';
+import SpotlightCard from '../reactbits components/SpotlightCard';
 
 import { useAppSelector } from '../store/hooks';
 
@@ -134,69 +136,101 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen">
       <div className="max-w-5xl mx-auto py-10 px-4 space-y-10">
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-4">
-            Welcome to MindEase
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400 italic">
-            "The journey of a thousand miles begins with a single step. Take that step today."
-          </p>
+          <SplitText
+            text="Welcome to MindEase"
+            tag="h1"
+            className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4"
+            delay={60}
+            duration={0.6}
+            ease="power3.out"
+            splitType="chars"
+            from={{ opacity: 0, y: 40 }}
+            to={{ opacity: 1, y: 0 }}
+            threshold={0}
+            rootMargin="-=10000px"
+            textAlign="center"
+          />
+          <SplitText
+            text={`"The journey of a thousand miles begins with a single step. Take that step today."`}
+            tag="p"
+            className="text-lg text-gray-600 dark:text-gray-400 italic"
+            delay={40}
+            duration={0.6}
+            ease="power3.out"
+            splitType="words"
+            from={{ opacity: 0, y: 20 }}
+            to={{ opacity: 1, y: 0 }}
+            threshold={0}
+            rootMargin="-=10000px"
+            textAlign="center"
+          />
         </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <Link to="/mood" className="card flex flex-col items-center text-center transform hover:scale-105 transition-transform duration-200">
-            <div className="p-4 rounded-full bg-primary-100 dark:bg-primary-900 mb-2">
-              <FiSmile className="w-8 h-8 text-primary-600 dark:text-primary-400" />
-            </div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Current Mood</h2>
-            <p className="text-2xl font-bold text-primary-600 dark:text-primary-400 mt-1">
-              {loading ? 'Loading...' : stats.currentMood}
-            </p>
+          <Link to="/mood" className="transition-transform duration-200 block h-full">
+            <SpotlightCard className="card flex flex-col items-center text-center transform hover:scale-105 w-full h-full">
+              <div className="p-4 rounded-full bg-primary-100 dark:bg-primary-900 mb-2">
+                <FiSmile className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Current Mood</h2>
+              <p className="text-2xl font-bold text-primary-600 dark:text-primary-400 mt-1">
+                {loading ? 'Loading...' : stats.currentMood}
+              </p>
+            </SpotlightCard>
           </Link>
-          <Link to="/journal" className="card flex flex-col items-center text-center transform hover:scale-105 transition-transform duration-200">
-            <div className="p-4 rounded-full bg-secondary-100 dark:bg-secondary-900 mb-2">
-              <FiBook className="w-8 h-8 text-secondary-600 dark:text-secondary-400" />
-            </div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Journal Entries</h2>
-            <p className="text-2xl font-bold text-secondary-600 dark:text-secondary-400 mt-1">
-              {loading ? 'Loading...' : entryCount}
-            </p>
+          <Link to="/journal" className="transition-transform duration-200 block h-full">
+            <SpotlightCard className="card flex flex-col items-center text-center transform hover:scale-105 w-full h-full">
+              <div className="p-4 rounded-full bg-secondary-100 dark:bg-secondary-900 mb-2">
+                <FiBook className="w-8 h-8 text-secondary-600 dark:text-secondary-400" />
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Journal Entries</h2>
+              <p className="text-2xl font-bold text-secondary-600 dark:text-secondary-400 mt-1">
+                {loading ? 'Loading...' : entryCount}
+              </p>
+            </SpotlightCard>
           </Link>
-          <Link to="/activities" className="card flex flex-col items-center text-center transform hover:scale-105 transition-transform duration-200">
-            <div className="p-4 rounded-full bg-green-100 dark:bg-green-900 mb-2">
-              <FiActivity className="w-8 h-8 text-green-600 dark:text-green-400" />
-            </div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Activities</h2>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
-              {loading ? 'Loading...' : stats.activities}
-            </p>
+          <Link to="/activities" className="transition-transform duration-200 block h-full">
+            <SpotlightCard className="card flex flex-col items-center text-center transform hover:scale-105 w-full h-full">
+              <div className="p-4 rounded-full bg-green-100 dark:bg-green-900 mb-2">
+                <FiActivity className="w-8 h-8 text-green-600 dark:text-green-400" />
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Activities</h2>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
+                {loading ? 'Loading...' : stats.activities}
+              </p>
+            </SpotlightCard>
           </Link>
         </div>
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Link to="/activities" className="card flex flex-col justify-between transform hover:scale-105 transition-transform duration-200">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Today's Activity</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Take a moment to practice deep breathing and mindfulness.
-              </p>
-            </div>
-            <button className="btn btn-primary w-full mt-2">Start Activity</button>
+          <Link to="/activities" className="transition-transform duration-200 block h-full">
+            <SpotlightCard className="card flex flex-col justify-between transform hover:scale-105 w-full h-full">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Today's Activity</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Take a moment to practice deep breathing and mindfulness.
+                </p>
+              </div>
+              <button className="btn btn-primary w-full mt-2">Start Activity</button>
+            </SpotlightCard>
           </Link>
-          <Link to="/journal" className="card flex flex-col justify-between transform hover:scale-105 transition-transform duration-200">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Journal Prompt</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                What are three things you're grateful for today?
-              </p>
-            </div>
-            <button className="btn btn-secondary w-full mt-2">Write Now</button>
+          <Link to="/journal" className="transition-transform duration-200 block h-full">
+            <SpotlightCard className="card flex flex-col justify-between transform hover:scale-105 w-full h-full">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Journal Prompt</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  What are three things you're grateful for today?
+                </p>
+              </div>
+              <button className="btn btn-secondary w-full mt-2">Write Now</button>
+            </SpotlightCard>
           </Link>
         </div>
 
         {/* Progress Overview */}
-        <div className="card">
+        <SpotlightCard className="card transform hover:scale-105 transition-transform duration-200 w-full">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Your Progress</h2>
           {loading ? (
             <div className="flex justify-center py-6">
@@ -228,7 +262,7 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
           )}
-        </div>
+        </SpotlightCard>
       </div>
     </div>
   );
