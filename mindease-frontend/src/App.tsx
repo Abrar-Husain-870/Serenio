@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import ScrollToTop from './components/ScrollToTop';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import Layout from './components/Layout';
@@ -116,6 +117,8 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <Router>
+        <GlobalAlerts />
+        <ScrollToTop />
         <AppContent />
       </Router>
     </AuthProvider>

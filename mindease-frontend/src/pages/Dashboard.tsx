@@ -137,7 +137,7 @@ const Dashboard: React.FC = () => {
       <div className="max-w-5xl mx-auto py-10 px-4 space-y-10">
         <div className="text-center mb-8">
           <SplitText
-            text="Welcome to MindEase"
+            text="Welcome to ZenPath"
             tag="h1"
             className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4"
             delay={60}

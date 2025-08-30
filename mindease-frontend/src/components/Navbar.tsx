@@ -22,7 +22,7 @@ const Navbar: React.FC = () => {
   return (
     <Box
       as="nav"
-      className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700"
+      className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700"
       w="full"
       shadow="softSm"
       position="sticky"
@@ -39,7 +39,7 @@ const Navbar: React.FC = () => {
               className="transition-transform duration-300 ease-out hover:-translate-y-0.5 hover:rotate-3 hover:drop-shadow-md"
               style={{ height: 32, width: 32 }}
             />
-            <Text fontSize="xl" fontWeight="bold" className="text-accent-600 dark:text-accent-400">
+            <Text fontSize="xl" fontWeight="bold" color="#1c4ed8" _dark={{ color: 'white' }}>
               ZenPath
             </Text>
           </Flex>

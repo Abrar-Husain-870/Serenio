@@ -1,0 +1,44 @@
+.card-swap-container {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  /* Avoid pushing below the viewport */
+  transform: translate(5%, 0%);
+  transform-origin: bottom right;
+
+  perspective: 900px;
+  overflow: visible;
+}
+
+.swap-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 12px;
+  /* Light theme defaults */
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+
+  transform-style: preserve-3d;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Dark theme overrides when .dark is on the html root */
+.dark .swap-card {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #000000; /* pure black in dark theme */
+}
+
+@media (max-width: 768px) {
+  .card-swap-container {
+    transform: scale(0.75) translate(10%, 0%);
+  }
+}
+
+@media (max-width: 480px) {
+  .card-swap-container {
+    transform: scale(0.55) translate(10%, 0%);
+  }
+}

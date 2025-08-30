@@ -1,12 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiSmile, FiBookOpen, FiActivity, FiMessageCircle, FiTrendingUp, FiStar } from 'react-icons/fi';
+import { FaQuoteLeft } from 'react-icons/fa';
 import mindeaseLogo from '../assets/mindease-logo.svg';
 import { useAuth } from '../contexts/AuthContext';
-import { Box, Flex, Grid, Heading, Text, Button } from '@chakra-ui/react';
+import { Box, Flex, Grid, Heading, Text, Button, ButtonGroup, IconButton, Pagination, Image } from '@chakra-ui/react';
 import GlareHover from '../reactbits components/GlareHover';
 import StarBorder from '../reactbits components/StarBorder';
 import SplitText from '../reactbits components/SplitText';
+import CardSwap, { Card } from '../reactbits components/CardSwap';
+import { HiChevronLeft, HiChevronRight } from 'react-icons/hi';
+import meditationImg from '../assets/card images/meditation.jpg';
+import happyFamilyImg from '../assets/card images/happy family.jpg';
+import sleepingBabyImg from '../assets/card images/sleeping baby.jpg';
+import graphImg from '../assets/card images/graph.jpg';
 
 const features = [
   {
@@ -47,8 +54,24 @@ const features = [
   },
 ];
 
+const testimonials: string[] = [
+  "ZenPath has completely changed how I understand my emotions. The mood tracker showed me patterns I never noticed before—and now I actually know what triggers my stress.",
+  "I’ve tried other wellness apps, but ZenPath feels different. It’s simple, beautiful, and everything just flows. The dark mode makes journaling at night feel calming.",
+  "The guided activities are small but powerful. Taking five minutes a day for breathing or gratitude has made a huge impact on my mental health.",
+  "I love that my journal entries stay private. It feels like a safe space where I can be completely honest with myself.",
+  "The progress tracker keeps me motivated. Seeing my growth visually makes me want to keep going, even on tough days.",
+  "The Joy Corner is my favorite part. Whenever I’m feeling low, I jump in for a quick mood boost—it’s like having a friend in my pocket.",
+  "ZenPath makes mental wellness feel achievable. It’s not overwhelming; it’s just small steps that add up, and I finally feel like I’m moving forward.",
+];
+
 const Home: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { currentUser } = useAuth();
+  const [testimonialPage, setTestimonialPage] = useState(1);
+  const isAuthenticated = !!currentUser;
+  // Chakra Pagination onPageChange passes an object like { page: number }
+  const handleTestimonialPageChange = (details: { page: number }) => {
+    setTestimonialPage(details.page);
+  };
   const handleAnimationComplete = () => {
     console.log('All letters have animated!');
   };
@@ -107,7 +130,7 @@ const Home: React.FC = () => {
         <Flex direction={{ base: 'column', sm: 'row' }} gap={4} justify="center">
           {!isAuthenticated ? (
             <Link to="/login" style={{ textDecoration: 'none' }}>
-              <Button px={8} py={3} fontSize="lg" fontWeight="semibold" shadow="softMd" bg="accent.600" color="gray.900" _hover={{ bg: 'accent.500' }}>
+              <Button px={8} py={3} fontSize="lg" fontWeight="semibold" shadow="softMd" bg="accent.600" color="gray.900" _dark={{ color: 'white' }} _hover={{ bg: 'accent.500' }}>
                 Sign In
               </Button>
             </Link>
@@ -133,9 +156,10 @@ const Home: React.FC = () => {
                 borderRadius="16px"
                 borderColor="transparent"
                 glareColor="#ffffff"
-                glareOpacity={0.35}
+                glareOpacity={0.6}
                 glareAngle={-45}
-                glareSize={180}
+                glareSize={240}
+                transitionDuration={700}
                 className="rounded-2xl overflow-hidden h-full w-full"
               >
                 <StarBorder
@@ -220,6 +244,106 @@ const Home: React.FC = () => {
         <Text mt={8} textAlign="center" fontSize="md" color="gray.600" _dark={{ color: 'gray.300' }}>
           Explore each tab from the sidebar to get the most out of ZenPath and support your mental wellness journey!
         </Text>
+      </Box>
+
+      {/* Bottom Extra Section */}
+      <Box w="full" maxW="5xl" mx="auto" mt={16} mb={16}>
+        <Box textAlign="center" mb={8}>
+          <Heading as="h2" size="lg" color="blue.700" _dark={{ color: 'blue.300' }}>
+            Voices & Benefits
+          </Heading>
+          <Text mt={2} fontSize="md" color="blue.900" _dark={{ color: 'gray.200' }}>
+            Hear from real users and explore the mindful features that support your journey.
+          </Text>
+        </Box>
+
+        <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} gap={6} columnGap={{ base: 8, lg: 14 }} alignItems="stretch">
+          {/* Left: Testimonials with pagination */}
+          <Flex direction="column" p={6} className="rounded-2xl bg-white dark:bg-black" height="600px">
+            <Flex direction="column" flex="1" justify="flex-start" mt={{ base: 10, md: 16, lg: 24 }}>
+              <Heading as="h3" size="md" color="blue.700" _dark={{ color: 'blue.300' }} mb={6}>
+                What users say
+              </Heading>
+              <Box
+                as="blockquote"
+                color="gray.800"
+                _dark={{ color: 'gray.200' }}
+                textAlign="left"
+                borderLeftWidth="4px"
+                borderLeftColor="blue.300"
+                _dark={{ borderLeftColor: 'blue.500', color: 'gray.200' }}
+                pl={4}
+                fontStyle="italic"
+                fontSize="lg"
+                lineHeight="tall"
+              >
+                <Box color="blue.400" _dark={{ color: 'blue.300' }} mb={2}>
+                  <FaQuoteLeft size={22} />
+                </Box>
+                {testimonials[testimonialPage - 1]}
+              </Box>
+              <Text mt={3} fontWeight="semibold" color="gray.600" _dark={{ color: 'gray.400' }}>
+                — {["Aarav Patel","Mia Chen","Liam Johnson","Sofia García","Noah Williams","Aisha Khan","Ethan Brown"][testimonialPage - 1]}
+              </Text>
+            </Flex>
+            <Box mt={6}>
+              <Pagination.Root
+                count={testimonials.length}
+                pageSize={1}
+                page={testimonialPage}
+                onPageChange={handleTestimonialPageChange}
+              >
+                <ButtonGroup gap="4" size="sm" variant="ghost">
+                  <Pagination.PrevTrigger asChild>
+                    <IconButton aria-label="Previous testimonial">
+                      <HiChevronLeft />
+                    </IconButton>
+                  </Pagination.PrevTrigger>
+                  <Pagination.PageText />
+                  <Pagination.NextTrigger asChild>
+                    <IconButton aria-label="Next testimonial">
+                      <HiChevronRight />
+                    </IconButton>
+                  </Pagination.NextTrigger>
+                </ButtonGroup>
+              </Pagination.Root>
+            </Box>
+          </Flex>
+
+          {/* Right: CardSwap */}
+          <Box style={{ height: '600px', position: 'relative' }}>
+            <CardSwap cardDistance={60} verticalDistance={70} delay={5000} pauseOnHover={false}>
+              <Card>
+                <div className="rounded-xl p-6 text-gray-900 dark:text-white" style={{ width: '100%', height: '100%' }}>
+                  <Heading as="h3" size="md" mb={2} className="text-blue-700 dark:text-blue-300">Mindful Moments</Heading>
+                  <Text className="text-gray-700 dark:text-gray-200">Calm your mind with guided meditation and reflection.</Text>
+                  <Image src={meditationImg} alt="Mindful breathing" borderRadius="lg" mt={4} height={{ base: '220px', md: '260px', lg: '280px' }} width="100%" objectFit="cover" />
+                </div>
+              </Card>
+              <Card>
+                <div className="rounded-xl p-6 text-gray-900 dark:text-white" style={{ width: '100%', height: '100%' }}>
+                  <Heading as="h3" size="md" mb={2} className="text-blue-700 dark:text-blue-300">Daily Gratitude</Heading>
+                  <Text className="text-gray-700 dark:text-gray-200">Build positivity with simple daily prompts.</Text>
+                  <Image src={happyFamilyImg} alt="Daily gratitude" borderRadius="lg" mt={4} height={{ base: '220px', md: '260px', lg: '280px' }} width="100%" objectFit="cover" />
+                </div>
+              </Card>
+              <Card>
+                <div className="rounded-xl p-6 text-gray-900 dark:text-white" style={{ width: '100%', height: '100%' }}>
+                  <Heading as="h3" size="md" mb={2} className="text-blue-700 dark:text-blue-300">Sleep Better</Heading>
+                  <Text className="text-gray-700 dark:text-gray-200">Tips and routines for a restful night.</Text>
+                  <Image src={sleepingBabyImg} alt="Sleep better" borderRadius="lg" mt={4} height={{ base: '220px', md: '260px', lg: '280px' }} width="100%" objectFit="cover" />
+                </div>
+              </Card>
+              <Card>
+                <div className="rounded-xl p-6 text-gray-900 dark:text-white" style={{ width: '100%', height: '100%' }}>
+                  <Heading as="h3" size="md" mb={2} className="text-blue-700 dark:text-blue-300">Growth Insights</Heading>
+                  <Text className="text-gray-700 dark:text-gray-200">Track emotional patterns and visualize your personal progress.</Text>
+                  <Image src={graphImg} alt="Progress and insights" borderRadius="lg" mt={4} height={{ base: '220px', md: '260px', lg: '280px' }} width="100%" objectFit="cover" />
+                </div>
+              </Card>
+            </CardSwap>
+          </Box>
+        </Grid>
       </Box>
     </Flex>
   );

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/index';
 import { FaRegCommentDots, FaBrain, FaCalendarAlt, FaExclamationTriangle, FaChartLine } from 'react-icons/fa';
@@ -197,17 +198,30 @@ const Chatbot: React.FC = () => {
                   className={`max-w-[80%] rounded-2xl p-3 text-base break-words shadow-md transition-all duration-200 ${
                     chat.isUser
                       ? 'bg-gradient-to-br from-blue-500 to-blue-700 text-white self-end'
-                      : 'bg-gradient-to-br from-gray-700 to-gray-800 text-gray-100 self-start'
+                      : 'self-start bg-white/20 text-white backdrop-blur-md border border-white/30 shadow-lg'
                   }`}
                   style={{ borderBottomRightRadius: chat.isUser ? 0 : '1.5rem', borderBottomLeftRadius: chat.isUser ? '1.5rem' : 0 }}
                 >
-                  {chat.text}
+                  <ReactMarkdown
+                    components={{
+                      p: ({ node, ...props }) => <p className="mb-2 leading-relaxed" {...props} />,
+                      strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
+                      ul: ({ node, ...props }) => <ul className="list-disc ml-5 mb-2" {...props} />,
+                      li: ({ node, ...props }) => <li className="mb-1" {...props} />,
+                      h1: ({ node, ...props }) => <h1 className="text-lg font-bold mb-2" {...props} />,
+                      h2: ({ node, ...props }) => <h2 className="text-base font-bold mb-2" {...props} />,
+                      h3: ({ node, ...props }) => <h3 className="text-base font-semibold mb-1" {...props} />,
+                      br: () => <br />,
+                    }}
+                  >
+                    {chat.text}
+                  </ReactMarkdown>
                 </div>
               </div>
             ))}
             {isLoading && (
               <div className="flex justify-start items-center mt-2">
-                <div className="bg-gradient-to-br from-gray-700 to-gray-800 text-gray-100 rounded-2xl px-4 py-2 flex items-center shadow-md">
+                <div className="rounded-2xl px-4 py-2 flex items-center shadow-lg bg-white/20 text-white backdrop-blur-md border border-white/30">
                   <FaRegCommentDots className="mr-2 text-xl animate-bounce" />
                   <span className="dot-flashing">
                     <span className="dot"></span>

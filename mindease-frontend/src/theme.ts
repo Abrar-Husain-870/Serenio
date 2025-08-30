@@ -8,8 +8,8 @@ const system: any = {
   theme: {
     ...((defaultSystem as any).theme || {}),
     config: {
-      initialColorMode: 'dark',
-      useSystemColorMode: false,
+      initialColorMode: 'system',
+      useSystemColorMode: true,
     },
     tokens: {
       ...(((defaultSystem as any).theme?.tokens) || {}),

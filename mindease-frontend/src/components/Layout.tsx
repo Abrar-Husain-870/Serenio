@@ -127,7 +127,9 @@ const Layout: React.FC = () => {
                   rounded="lg"
                   fontWeight="medium"
                   transition="background-color 200ms ease"
-                  className={`${active ? 'bg-brand-100 text-gray-800 dark:bg-gray-700 dark:text-white' : 'bg-transparent'} hover:bg-gray-100 dark:hover:bg-gray-800`}
+                  className={`${active ? 'bg-brand-100 dark:bg-gray-700' : 'bg-transparent'} hover:bg-gray-100 dark:hover:bg-gray-800`}
+                  // In light theme, keep active text blue for contrast against light bg; in dark, use white
+                  style={{ color: active ? (isDark ? 'white' : '#1c4ed8') : '#1c4ed8' }}
                 >
                   <Box as="span">{link.icon}</Box>
                   {sidebarOpen && <Box as="span">{link.label}</Box>}
